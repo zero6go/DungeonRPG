@@ -11,6 +11,45 @@ ARPGPlayerController::ARPGPlayerController()
 	
 }
 
+void ARPGPlayerController::PlayerTick(float DeltaTime)
+{
+	Super::PlayerTick(DeltaTime);
+
+	CursorTrace();
+}
+
+void ARPGPlayerController::CursorTrace()
+{
+	FHitResult CursorHit;
+	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
+	if(!CursorHit.bBlockingHit) return;
+
+	LastActor = ThisActor;
+	ThisActor = Cast<IEnemyInterface>(CursorHit.GetActor());
+	if(LastActor == nullptr)
+	{
+		if(ThisActor != nullptr)
+		{
+			ThisActor->HighlightActor();
+		}
+	}
+	else
+	{
+		if(ThisActor != nullptr)
+		{
+			if(LastActor != ThisActor)
+			{
+				LastActor->UnHighlightActor();
+				ThisActor->HighlightActor();
+			}
+		}
+		else
+		{
+			LastActor->UnHighlightActor();
+		}
+	}
+}
+
 void ARPGPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
