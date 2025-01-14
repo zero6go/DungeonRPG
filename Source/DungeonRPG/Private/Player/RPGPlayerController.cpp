@@ -4,6 +4,7 @@
 #include "Player/RPGPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ARPGPlayerController::ARPGPlayerController()
 {
@@ -56,8 +57,7 @@ void ARPGPlayerController::BeginPlay()
 	check(InputContext);
 
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	check(Subsystem);
-	Subsystem->AddMappingContext(InputContext, 0);
+	if(Subsystem) Subsystem->AddMappingContext(InputContext, 0);
 
 	bShowMouseCursor = true;
 	DefaultMouseCursor = EMouseCursor::Default;
@@ -66,6 +66,11 @@ void ARPGPlayerController::BeginPlay()
 	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	InputModeData.SetHideCursorDuringCapture(true);
 	SetInputMode(InputModeData);
+
+	if(APawn* ControlledPawn = this->GetPawn<APawn>())
+	{
+		ForwardVector = ControlledPawn->GetActorForwardVector();
+	}
 }
 
 void ARPGPlayerController::SetupInputComponent()
@@ -81,7 +86,9 @@ void ARPGPlayerController::Move(const FInputActionValue& InputActionValue)
 	if(APawn* ControlledPawn = this->GetPawn<APawn>())
 	{
 		const FVector2d InputAxisVec = InputActionValue.Get<FVector2D>();
-		ControlledPawn->AddMovementInput(ControlledPawn->GetActorForwardVector(), InputAxisVec.Y);
-		ControlledPawn->AddMovementInput(ControlledPawn->GetActorRightVector(), InputAxisVec.X);
+		float Angle = atan2f(InputAxisVec.X, InputAxisVec.Y) / PI * 180.f;
+		FVector Direction = ForwardVector;
+		Direction = UKismetMathLibrary::RotateAngleAxis(Direction, Angle, FVector(0, 0, 1));
+		ControlledPawn->AddMovementInput(Direction);
 	}
 }

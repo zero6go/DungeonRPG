@@ -36,4 +36,6 @@ private:
 	void CursorTrace();
 	IEnemyInterface* LastActor;
 	IEnemyInterface* ThisActor;
+
+	FVector ForwardVector;
 };
