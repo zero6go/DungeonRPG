@@ -19,8 +19,14 @@ public:
 	void PossessedBy(AController* NewController) override;
 	void OnRep_PlayerState() override;
 
+	virtual int32 GetCharacterLevel() override;
+
+	virtual UAttributeSet* GetAttributeSet() const override;
+
+	virtual void Die() override;
+
 protected:
 	virtual void InitAbilityActorInfo() override;
-
-	virtual int32 GetCharacterLevel() override;
+	
+	
 };

@@ -4,6 +4,7 @@
 #include "Character/PlayerCharacter.h"
 
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/Abilities/RPGGameplayAbility.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/RPGPlayerController.h"
 #include "Player/RPGPlayerState.h"
@@ -21,13 +22,24 @@ APlayerCharacter::APlayerCharacter()
 	bUseControllerRotationRoll = false;
 }
 
+//服务器
 void APlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
 	InitAbilityActorInfo();
+	for(auto Ability : StartupAbilities)
+	{
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(Ability.AbilityClass, Ability.Level);
+		if (URPGGameplayAbility *RPGAbility = Cast<URPGGameplayAbility>(AbilitySpec.Ability))
+		{
+			AbilitySpec.DynamicAbilityTags.AddTag(RPGAbility->InputTag);
+			GetAbilitySystemComponent()->GiveAbility(AbilitySpec);
+		}
+	}
 }
 
+//客户端
 void APlayerCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
@@ -51,10 +63,10 @@ void APlayerCharacter::InitAbilityActorInfo()
 		}
 	}
 
-	InitDefaultAbilities(DefaultPrimaryAttributes);
-	InitDefaultAbilities(DefaultSecondaryAttributes);
-	InitDefaultAbilities(DefaultVitalAttributes);
-	InitDefaultAbilities(DefaultSkills);
+	int32 Level = GetCharacterLevel();
+	InitDefaultAttributes(DefaultPrimaryAttributes, Level);
+	InitDefaultAttributes(DefaultSecondaryAttributes, Level);
+	InitDefaultAttributes(DefaultVitalAttributes, Level);
 }
 
 int32 APlayerCharacter::GetCharacterLevel()
@@ -62,4 +74,17 @@ int32 APlayerCharacter::GetCharacterLevel()
 	const ARPGPlayerState *RPGPlayerState = GetPlayerState<ARPGPlayerState>();
 	check(RPGPlayerState);
 	return RPGPlayerState->GetPlayerLevel();
+}
+
+UAttributeSet* APlayerCharacter::GetAttributeSet() const
+{
+	const ARPGPlayerState *RPGPlayerState = GetPlayerState<ARPGPlayerState>();
+	check(RPGPlayerState);
+	return RPGPlayerState->GetAttributeSet();
+}
+
+void APlayerCharacter::Die()
+{
+	if (APlayerController *PC = Cast<APlayerController>(GetController())) PC->DisableInput(nullptr);
+	Super::Die();
 }

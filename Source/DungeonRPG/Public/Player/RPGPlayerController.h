@@ -7,6 +7,10 @@
 #include "Interaction/EnemyInterface.h"
 #include "RPGPlayerController.generated.h"
 
+class UDamageTextComponent;
+class URPGInputConfig;
+class URPGAbilitySystemComponent;
+struct FGameplayTag;
 struct FInputActionValue;
 class UInputMappingContext;
 class UInputAction;
@@ -21,6 +25,9 @@ class DUNGEONRPG_API ARPGPlayerController : public APlayerController
 public:
 	ARPGPlayerController();
 	virtual void PlayerTick(float DeltaTime) override;
+
+	UFUNCTION(Client, Reliable)
+	void ShowDamageValue(float Damage, ACharacter* TargetCharacter, bool bCriticalHit);
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -33,9 +40,18 @@ private:
 
 	void Move(const FInputActionValue& InputActionValue);
 
-	void CursorTrace();
-	IEnemyInterface* LastActor;
-	IEnemyInterface* ThisActor;
-
 	FVector ForwardVector;
+
+	TObjectPtr<URPGAbilitySystemComponent> AbilitySystemComponent;
+	URPGAbilitySystemComponent *GetAbilitySystemComponent();
+
+	void AbilityInputPressed(FGameplayTag InputTag);
+	void AbilityInputHeld(FGameplayTag InputTag);
+	void AbilityInputReleased(FGameplayTag InputTag);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<URPGInputConfig> InputConfig;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 };

@@ -5,8 +5,6 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
-#include "AbilitySystem/RPGAttributeSet.h"
-#include "Character/PlayerCharacter.h"
 
 ARPGEffectActor::ARPGEffectActor()
 {

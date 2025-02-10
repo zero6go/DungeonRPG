@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "RPGHUD.generated.h"
 
+class UAttributeMenuWidgetController;
 class UAttributeSet;
 class UAbilitySystemComponent;
 struct FWidgetControllerParams;
@@ -20,14 +21,16 @@ class DUNGEONRPG_API ARPGHUD : public AHUD
 	GENERATED_BODY()
 
 public:
-	UPROPERTY()
-	TObjectPtr<URPGUserWidget> OverlayWidget;
-
 	UOverlayWidgetController *GetOverlayWidgetController(const FWidgetControllerParams &WCParams);
 
 	void InitOverlay(APlayerController *PC, APlayerState *PS, UAbilitySystemComponent *ASC, UAttributeSet *AS);
 
+	UAttributeMenuWidgetController *GetAttributeMenuWidgetController(const FWidgetControllerParams &WCParams);
+
 private:
+	UPROPERTY()
+	TObjectPtr<URPGUserWidget> OverlayWidget;
+	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<URPGUserWidget> OverlayWidgetClass;
 
@@ -36,4 +39,10 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UOverlayWidgetController> OverlayWidgetControllerClass;
+
+	UPROPERTY()
+	TObjectPtr<UAttributeMenuWidgetController> AttributeMenuWidgetController;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UAttributeMenuWidgetController> AttributeMenuWidgetControllerClass;
 };

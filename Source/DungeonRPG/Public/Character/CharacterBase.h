@@ -9,6 +9,7 @@
 #include "Interaction/CombatInterface.h"
 #include "CharacterBase.generated.h"
 
+class UGameplayAbility;
 class UAbilitySystemComponent;
 class UAttributeSet;
 class UGameplayEffect;
@@ -24,13 +25,33 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UFUNCTION(BlueprintCallable)
-	UAttributeSet* GetAttributeSet() const {return AttributeSet;}
+	virtual UAttributeSet* GetAttributeSet() const {return AttributeSet;}
+
+	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
+
+	virtual void Die() override;
+	UFUNCTION(NetMulticast, Reliable)
+	virtual void MulticastHandleDeath();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	TArray<FAttackInfo> AttackInfos;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
+	TArray<FAbilityInfo> StartupAbilities;
+
+	UFUNCTION(BlueprintCallable)
+	virtual int32 GetCharacterLevel();
 
 protected:
 	virtual void BeginPlay() override;
 	
-	UPROPERTY(EditAnywhere, Category = "Combat")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<USkeletalMeshComponent> Weapon;
+
+	virtual FVector GetCombatSocketLocation_Implementation(const FName &AttackSocketName) override;
+
+	bool bDead = false;
+	virtual bool IsDead_Implementation() const override;
 
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
@@ -49,8 +70,21 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
 	TSubclassOf<UGameplayEffect> DefaultVitalAttributes;
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Skills")
-	TSubclassOf<UGameplayEffect> DefaultSkills;
+	void InitDefaultAttributes(TSubclassOf<UGameplayEffect> DefaultAttributes, int32 Level);
 
-	void InitDefaultAbilities(TSubclassOf<UGameplayEffect> DefaultAttributes);
+	void Dissolve();
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartDissolveTimeline(UMaterialInstanceDynamic *DynamicMaterialInstance);
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartWeaponDissolveTimeline(UMaterialInstanceDynamic *DynamicMaterialInstance);
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UMaterialInterface> DissolveMaterialInstance;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TObjectPtr<UMaterialInterface> WeaponDissolveMaterialInstance;
+
+private:
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	UAnimMontage* HitReactMontage;
 };

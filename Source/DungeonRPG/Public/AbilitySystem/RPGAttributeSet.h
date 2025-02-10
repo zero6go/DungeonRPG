@@ -87,12 +87,16 @@ public:
 	ATTRIBUTE_ACCESSORS(URPGAttributeSet, MagicResistance);
 
 	/*
-	 * Skills
+	 * Meta Attributes
 	 */
 
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_SuppliesSkill, Category="Skills")
-	FGameplayAttributeData SuppliesSkill;
-	ATTRIBUTE_ACCESSORS(URPGAttributeSet, SuppliesSkill);
+	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
+	FGameplayAttributeData IncomingAttackDamage;
+	ATTRIBUTE_ACCESSORS(URPGAttributeSet, IncomingAttackDamage);
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
+	FGameplayAttributeData IncomingMagicDamage;
+	ATTRIBUTE_ACCESSORS(URPGAttributeSet, IncomingMagicDamage);
 
 	UFUNCTION()
 	void OnRep_Strength(const FGameplayAttributeData& OldStrength) const;
@@ -125,6 +129,4 @@ public:
 	UFUNCTION()
 	void OnRep_MagicResistance(const FGameplayAttributeData& OldMagicResistance) const;
 	
-	UFUNCTION()
-	void OnRep_SuppliesSkill(const FGameplayAttributeData& OldSuppliesSkill) const;
 };

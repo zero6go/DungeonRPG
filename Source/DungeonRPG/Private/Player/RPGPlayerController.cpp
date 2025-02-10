@@ -3,8 +3,13 @@
 
 #include "Player/RPGPlayerController.h"
 #include "EnhancedInputSubsystems.h"
-#include "EnhancedInputComponent.h"
+#include "AbilitySystem/RPGAbilitySystemComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "GameplayTagContainer.h"
+#include "Input/RPGInputComponent.h"
+#include "GameFramework/Character.h"
+#include "UI/Widget/DamageTextComponent.h"
 
 ARPGPlayerController::ARPGPlayerController()
 {
@@ -15,40 +20,45 @@ ARPGPlayerController::ARPGPlayerController()
 void ARPGPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
-
-	CursorTrace();
 }
 
-void ARPGPlayerController::CursorTrace()
+void ARPGPlayerController::ShowDamageValue_Implementation(float Damage, ACharacter* TargetCharacter, bool bCriticalHit)
 {
-	FHitResult CursorHit;
-	GetHitResultUnderCursor(ECC_Visibility, false, CursorHit);
-	if(!CursorHit.bBlockingHit) return;
+	if (IsValid(TargetCharacter) && DamageTextComponentClass && IsLocalController())
+	{
+		UDamageTextComponent *DamageTextComponent = NewObject<UDamageTextComponent>(TargetCharacter, DamageTextComponentClass);
+		DamageTextComponent->RegisterComponent();
+		DamageTextComponent->SetDamageText(Damage, bCriticalHit);
+		DamageTextComponent->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		DamageTextComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	}
+}
 
-	LastActor = ThisActor;
-	ThisActor = Cast<IEnemyInterface>(CursorHit.GetActor());
-	if(LastActor == nullptr)
+URPGAbilitySystemComponent *ARPGPlayerController::GetAbilitySystemComponent()
+{
+	if (AbilitySystemComponent == nullptr)
 	{
-		if(ThisActor != nullptr)
-		{
-			ThisActor->HighlightActor();
-		}
+		AbilitySystemComponent = Cast<URPGAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetPawn()));
 	}
-	else
-	{
-		if(ThisActor != nullptr)
-		{
-			if(LastActor != ThisActor)
-			{
-				LastActor->UnHighlightActor();
-				ThisActor->HighlightActor();
-			}
-		}
-		else
-		{
-			LastActor->UnHighlightActor();
-		}
-	}
+	return AbilitySystemComponent;
+}
+
+void ARPGPlayerController::AbilityInputPressed(FGameplayTag InputTag)
+{
+	if (GetAbilitySystemComponent() == nullptr) return;
+	AbilitySystemComponent->AbilityInputPressed(InputTag);
+}
+
+void ARPGPlayerController::AbilityInputHeld(FGameplayTag InputTag)
+{
+	if (GetAbilitySystemComponent() == nullptr) return;
+	AbilitySystemComponent->AbilityInputHeld(InputTag);
+}
+
+void ARPGPlayerController::AbilityInputReleased(FGameplayTag InputTag)
+{
+	if (GetAbilitySystemComponent() == nullptr) return;
+	AbilitySystemComponent->AbilityInputReleased(InputTag);
 }
 
 void ARPGPlayerController::BeginPlay()
@@ -76,9 +86,10 @@ void ARPGPlayerController::BeginPlay()
 void ARPGPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-
-	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
-	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ARPGPlayerController::Move);
+	
+	URPGInputComponent *RPGInputComponent = CastChecked<URPGInputComponent>(InputComponent);
+	RPGInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ARPGPlayerController::Move);
+	RPGInputComponent->BindAbilityActions(InputConfig, this, &ARPGPlayerController::AbilityInputPressed, &ARPGPlayerController::AbilityInputHeld, &ARPGPlayerController::AbilityInputReleased);
 }
 
 void ARPGPlayerController::Move(const FInputActionValue& InputActionValue)

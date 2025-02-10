@@ -4,6 +4,11 @@
 #include "AbilitySystem/RPGAttributeSet.h"
 #include "Net/UnrealNetwork.h"
 #include "GameplayEffectExtension.h"
+#include "Character/CharacterBase.h"
+#include "Interaction/CombatInterface.h"
+#include "Player/RPGPlayerController.h"
+#include "GameFramework/Character.h"
+#include "Player/RPGPlayerState.h"
 
 URPGAttributeSet::URPGAttributeSet()
 {
@@ -31,7 +36,6 @@ void URPGAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	DOREPLIFETIME_CONDITION_NOTIFY(URPGAttributeSet, MagicPower, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URPGAttributeSet, MagicResistance, COND_None, REPNOTIFY_Always);
 	
-	DOREPLIFETIME_CONDITION_NOTIFY(URPGAttributeSet, SuppliesSkill, COND_None, REPNOTIFY_Always);
 }
 
 void URPGAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -51,6 +55,173 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 	if (Data.EvaluatedData.Attribute == GetManaAttribute())
 	{
 		SetMana(FMath::Clamp<float>(GetMana(), 0.0f, GetMaxMana()));
+	}
+	//计算物理伤害
+	if (Data.EvaluatedData.Attribute == GetIncomingAttackDamageAttribute())
+	{
+		float LocalIncomingAttackDamage = GetIncomingAttackDamage();
+		SetIncomingAttackDamage(0.f);
+		if (LocalIncomingAttackDamage > 0)
+		{
+			ACharacterBase *Target;
+			if (ARPGPlayerState *PS= Cast<ARPGPlayerState>(GetOwningActor()))  Target = Cast<ACharacterBase>(PS->GetPawn());
+			else Target = Cast<ACharacterBase>(GetOwningActor());
+			
+			ACharacterBase *Source = Cast<ACharacterBase>(Data.EffectSpec.GetContext().GetInstigatorAbilitySystemComponent()->GetAvatarActor());
+			//自残或受到场地伤害（EffectActor的ASC是触发该Actor的玩家所拥有的ASC，详见RPGEffectActor代码）
+			if (Source == Target)
+			{
+				URPGAttributeSet *TargetAttributeSet = Cast<URPGAttributeSet>(Target->GetAttributeSet());
+				float ArmorValue = TargetAttributeSet->GetArmor();
+				ArmorValue = ArmorValue / (100.f + ArmorValue);
+				LocalIncomingAttackDamage = LocalIncomingAttackDamage * (1.f - ArmorValue);
+				const float NewHealth = GetHealth() - LocalIncomingAttackDamage;
+				SetHealth(FMath::Clamp<float>(NewHealth, 0.0f, GetMaxHealth()));
+			
+				const bool bFatal = NewHealth <= 0.f;
+				if (bFatal)
+				{
+					ICombatInterface *CombatInterface = Cast<ICombatInterface>(Target);
+					if (CombatInterface)
+					{
+						CombatInterface->Die();
+					}
+				}
+				//显示伤害值
+				if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Target->Controller))
+				{
+					PC->ShowDamageValue(LocalIncomingAttackDamage, Cast<ACharacter>(Target), false);
+				}
+			}
+			//受到其他Character伤害
+			else
+			{
+				URPGAttributeSet *SourceAttributeSet = Cast<URPGAttributeSet>(Source->GetAttributeSet());
+				URPGAttributeSet *TargetAttributeSet = Cast<URPGAttributeSet>(Target->GetAttributeSet());
+
+				float ArmorValue = TargetAttributeSet->GetArmor();
+				ArmorValue = ArmorValue / (100.f + ArmorValue);
+				LocalIncomingAttackDamage = LocalIncomingAttackDamage * (1.f - ArmorValue);
+			
+				float CritRate = SourceAttributeSet->GetCriticalRate();
+				float CritDmg = SourceAttributeSet->GetCriticalDamage() / 100.f;
+				const float Seed = FMath::RandRange(0.f, 100.f);
+				const bool bCriticalHit = Seed == 100.f ? true : Seed < CritRate;
+				if (bCriticalHit) LocalIncomingAttackDamage *= CritDmg;
+			
+				const float NewHealth = GetHealth() - LocalIncomingAttackDamage;
+				SetHealth(FMath::Clamp<float>(NewHealth, 0.0f, GetMaxHealth()));
+			
+				const bool bFatal = NewHealth <= 0.f;
+				if (bFatal)
+				{
+					ICombatInterface *CombatInterface = Cast<ICombatInterface>(Target);
+					if (CombatInterface)
+					{
+						CombatInterface->Die();
+					}
+				}
+				else
+				{
+					FGameplayTagContainer TagContainer;
+					TagContainer.AddTag(FGameplayTag::RequestGameplayTag("Effects.HitReact"));
+					GetOwningAbilitySystemComponent()->TryActivateAbilitiesByTag(TagContainer);
+				}
+				//显示伤害值
+				if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Source->Controller))
+				{
+					PC->ShowDamageValue(LocalIncomingAttackDamage, Cast<ACharacter>(Target), bCriticalHit);
+				}
+				if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Target->Controller))
+				{
+					PC->ShowDamageValue(LocalIncomingAttackDamage, Cast<ACharacter>(Target), bCriticalHit);
+				}
+			}
+		}
+	}
+	//计算魔法伤害
+	if (Data.EvaluatedData.Attribute == GetIncomingMagicDamageAttribute())
+	{
+		float LocalIncomingMagicDamage = GetIncomingMagicDamage();
+		SetIncomingMagicDamage(0.f);
+		if (LocalIncomingMagicDamage > 0)
+		{
+			ACharacterBase *Target;
+			if (ARPGPlayerState *PS= Cast<ARPGPlayerState>(GetOwningActor()))  Target = Cast<ACharacterBase>(PS->GetPawn());
+			else Target = Cast<ACharacterBase>(GetOwningActor());
+			
+			ACharacterBase *Source = Cast<ACharacterBase>(Data.EffectSpec.GetContext().GetInstigatorAbilitySystemComponent()->GetAvatarActor());
+			//自残或受到场地伤害（EffectActor的ASC是触发该Actor的玩家所拥有的ASC，详见RPGEffectActor代码）
+			if (Source == Target)
+			{
+				URPGAttributeSet *TargetAttributeSet = Cast<URPGAttributeSet>(Target->GetAttributeSet());
+				float MagicRes = TargetAttributeSet->GetMagicResistance();
+				MagicRes = MagicRes / (100.f + MagicRes);
+				LocalIncomingMagicDamage = LocalIncomingMagicDamage * (1.f - MagicRes);
+				const float NewHealth = GetHealth() - LocalIncomingMagicDamage;
+				SetHealth(FMath::Clamp<float>(NewHealth, 0.0f, GetMaxHealth()));
+			
+				const bool bFatal = NewHealth <= 0.f;
+				if (bFatal)
+				{
+					ICombatInterface *CombatInterface = Cast<ICombatInterface>(Target);
+					if (CombatInterface)
+					{
+						CombatInterface->Die();
+					}
+				}
+				//显示伤害值
+				if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Target->Controller))
+				{
+					PC->ShowDamageValue(LocalIncomingMagicDamage, Cast<ACharacter>(Target), false);
+				}
+			}
+			//受到其他Character伤害
+			else
+			{
+				URPGAttributeSet *SourceAttributeSet = Cast<URPGAttributeSet>(Source->GetAttributeSet());
+				URPGAttributeSet *TargetAttributeSet = Cast<URPGAttributeSet>(Target->GetAttributeSet());
+
+				float MagicPow = SourceAttributeSet->GetMagicPower() / 100.f;
+				float MagicRes = TargetAttributeSet->GetMagicResistance();
+				MagicRes = MagicRes / (100.f + MagicRes);
+				LocalIncomingMagicDamage = LocalIncomingMagicDamage * MagicPow * (1.f - MagicRes);
+			
+				float CritRate = SourceAttributeSet->GetCriticalRate();
+				float CritDmg = SourceAttributeSet->GetCriticalDamage() / 100.f;
+				const float Seed = FMath::RandRange(0.f, 100.f);
+				const bool bCriticalHit = Seed == 100.f ? true : Seed < CritRate;
+				if (bCriticalHit) LocalIncomingMagicDamage *= CritDmg;
+			
+				const float NewHealth = GetHealth() - LocalIncomingMagicDamage;
+				SetHealth(FMath::Clamp<float>(NewHealth, 0.0f, GetMaxHealth()));
+			
+				const bool bFatal = NewHealth <= 0.f;
+				if (bFatal)
+				{
+					ICombatInterface *CombatInterface = Cast<ICombatInterface>(Target);
+					if (CombatInterface)
+					{
+						CombatInterface->Die();
+					}
+				}
+				else
+				{
+					FGameplayTagContainer TagContainer;
+					TagContainer.AddTag(FGameplayTag::RequestGameplayTag("Effects.HitReact"));
+					GetOwningAbilitySystemComponent()->TryActivateAbilitiesByTag(TagContainer);
+				}
+				//显示伤害值
+				if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Source->Controller))
+				{
+					PC->ShowDamageValue(LocalIncomingMagicDamage, Cast<ACharacter>(Target), bCriticalHit);
+				}
+				if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Target->Controller))
+				{
+					PC->ShowDamageValue(LocalIncomingMagicDamage, Cast<ACharacter>(Target), bCriticalHit);
+				}
+			}
+		}
 	}
 }
 
@@ -117,9 +288,4 @@ void URPGAttributeSet::OnRep_MagicPower(const FGameplayAttributeData& OldMagicPo
 void URPGAttributeSet::OnRep_MagicResistance(const FGameplayAttributeData& OldMagicResistance) const
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(URPGAttributeSet, MagicResistance, OldMagicResistance);
-}
-
-void URPGAttributeSet::OnRep_SuppliesSkill(const FGameplayAttributeData& OldSuppliesSkill) const
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(URPGAttributeSet, SuppliesSkill, OldSuppliesSkill);
 }
