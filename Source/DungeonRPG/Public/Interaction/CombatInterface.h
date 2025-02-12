@@ -38,6 +38,25 @@ struct FAttackInfo
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float AttackRadius;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	USoundBase *ImpactSound = nullptr;
+};
+
+USTRUCT(BlueprintType)
+struct FRangedAttackInfo
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimMontage *Montage = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FGameplayTag AttackTag;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FName AttackSocketName;
+	
 };
 
 USTRUCT(BlueprintType)

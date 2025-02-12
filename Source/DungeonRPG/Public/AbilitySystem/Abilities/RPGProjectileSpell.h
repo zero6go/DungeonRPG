@@ -7,6 +7,19 @@
 #include "RPGProjectileSpell.generated.h"
 
 class ARPGProjectile;
+
+USTRUCT(BlueprintType)
+struct FProjectileInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<ARPGProjectile> ProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<UGameplayEffect> DamageEffectClass;
+};
+
 /**
  * 
  */
@@ -17,11 +30,6 @@ class DUNGEONRPG_API URPGProjectileSpell : public URPGGameplayAbility
 
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Ability")
-	void SpawnProjectile(const FVector &TargetLocation, const FVector &WeaponTipSocketLocation);
+	void SpawnProjectile(const FVector &TargetLocation, const FVector &WeaponTipSocketLocation, FProjectileInfo ProjectileInfo);
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<ARPGProjectile> ProjectileClass;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<UGameplayEffect> DamageEffectClass;
 };

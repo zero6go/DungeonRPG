@@ -10,6 +10,7 @@
 #include "Input/RPGInputComponent.h"
 #include "GameFramework/Character.h"
 #include "UI/Widget/DamageTextComponent.h"
+#include "UI/Widget/RestoreTextComponent.h"
 
 ARPGPlayerController::ARPGPlayerController()
 {
@@ -59,6 +60,19 @@ void ARPGPlayerController::AbilityInputReleased(FGameplayTag InputTag)
 {
 	if (GetAbilitySystemComponent() == nullptr) return;
 	AbilitySystemComponent->AbilityInputReleased(InputTag);
+}
+
+void ARPGPlayerController::ShowRestoreValue_Implementation(float Restore, ACharacter* TargetCharacter,
+	bool bCriticalHit, bool bHeal)
+{
+	if (IsValid(TargetCharacter) && RestoreTextComponentClass && IsLocalController())
+	{
+		URestoreTextComponent *RestoreTextComponent = NewObject<URestoreTextComponent>(TargetCharacter, RestoreTextComponentClass);
+		RestoreTextComponent->RegisterComponent();
+		RestoreTextComponent->SetRestoreText(Restore, bCriticalHit, bHeal);
+		RestoreTextComponent->AttachToComponent(TargetCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		RestoreTextComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	}
 }
 
 void ARPGPlayerController::BeginPlay()

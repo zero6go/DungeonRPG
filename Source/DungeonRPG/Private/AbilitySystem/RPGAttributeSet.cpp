@@ -223,6 +223,80 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 			}
 		}
 	}
+
+	//回血回蓝
+	if (Data.EvaluatedData.Attribute == GetIncomingHealAttribute())
+	{
+		float LocalIncomingHeal = GetIncomingHeal();
+		SetIncomingHeal(0.f);
+		if (LocalIncomingHeal > 0)
+		{
+			ACharacterBase *Target;
+			if (ARPGPlayerState *PS= Cast<ARPGPlayerState>(GetOwningActor()))  Target = Cast<ACharacterBase>(PS->GetPawn());
+			else Target = Cast<ACharacterBase>(GetOwningActor());
+			ACharacterBase *Source = Cast<ACharacterBase>(Data.EffectSpec.GetContext().GetInstigatorAbilitySystemComponent()->GetAvatarActor());
+			URPGAttributeSet *SourceAttributeSet = Cast<URPGAttributeSet>(Source->GetAttributeSet());
+			URPGAttributeSet *TargetAttributeSet = Cast<URPGAttributeSet>(Target->GetAttributeSet());
+			
+			float CritRate = SourceAttributeSet->GetCriticalRate();
+			float CritDmg = SourceAttributeSet->GetCriticalDamage() / 100.f;
+			const float Seed = FMath::RandRange(0.f, 100.f);
+			const bool bCriticalHit = Seed == 100.f ? true : Seed < CritRate;
+			if (bCriticalHit) LocalIncomingHeal *= CritDmg;
+			
+			const float NewHealth = GetHealth() + LocalIncomingHeal;
+			SetHealth(FMath::Clamp<float>(NewHealth, 0.0f, GetMaxHealth()));
+			
+			//显示回复量
+			if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Source->Controller))
+			{
+				PC->ShowRestoreValue(LocalIncomingHeal, Cast<ACharacter>(Target), bCriticalHit, true);
+			}
+			if (Source != Target)
+			{
+				if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Target->Controller))
+				{
+					PC->ShowRestoreValue(LocalIncomingHeal, Cast<ACharacter>(Target), bCriticalHit, true);
+				}
+			}
+		}
+	}
+	if (Data.EvaluatedData.Attribute == GetIncomingManaAttribute())
+	{
+		float LocalIncomingMana = GetIncomingMana();
+		SetIncomingMana(0.f);
+		if (LocalIncomingMana > 0)
+		{
+			ACharacterBase *Target;
+			if (ARPGPlayerState *PS= Cast<ARPGPlayerState>(GetOwningActor()))  Target = Cast<ACharacterBase>(PS->GetPawn());
+			else Target = Cast<ACharacterBase>(GetOwningActor());
+			ACharacterBase *Source = Cast<ACharacterBase>(Data.EffectSpec.GetContext().GetInstigatorAbilitySystemComponent()->GetAvatarActor());
+			URPGAttributeSet *SourceAttributeSet = Cast<URPGAttributeSet>(Source->GetAttributeSet());
+			URPGAttributeSet *TargetAttributeSet = Cast<URPGAttributeSet>(Target->GetAttributeSet());
+			
+			float CritRate = SourceAttributeSet->GetCriticalRate();
+			float CritDmg = SourceAttributeSet->GetCriticalDamage() / 100.f;
+			const float Seed = FMath::RandRange(0.f, 100.f);
+			const bool bCriticalHit = Seed == 100.f ? true : Seed < CritRate;
+			if (bCriticalHit) LocalIncomingMana *= CritDmg;
+			
+			const float NewMana = GetMana() + LocalIncomingMana;
+			SetMana(FMath::Clamp<float>(NewMana, 0.0f, GetMaxMana()));
+			
+			//显示回复量
+			if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Source->Controller))
+			{
+				PC->ShowRestoreValue(LocalIncomingMana, Cast<ACharacter>(Target), bCriticalHit, false);
+			}
+			if (Source != Target)
+			{
+				if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Target->Controller))
+				{
+					PC->ShowRestoreValue(LocalIncomingMana, Cast<ACharacter>(Target), bCriticalHit, false);
+				}
+			}
+		}
+	}
 }
 
 void URPGAttributeSet::OnRep_Strength(const FGameplayAttributeData& OldStrength) const

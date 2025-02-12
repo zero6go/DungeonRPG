@@ -37,6 +37,7 @@ AEnemy::AEnemy()
 void AEnemy::Die()
 {
 	SetLifeSpan(5.f);
+	RPGAIController->GetBlackboardComponent()->SetValueAsBool("bAlive", false);
 	Super::Die();
 }
 
@@ -119,6 +120,6 @@ void AEnemy::PossessedBy(AController* NewController)
 
 	RPGAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->GetBlackboardAsset());
 	RPGAIController->GetBlackboardComponent()->SetValueAsBool("bHitReacting", false);
-	RPGAIController->GetBlackboardComponent()->SetValueAsBool("bRangedAttacker", ActorHasTag("Archer") || ActorHasTag("Caster"));
+	RPGAIController->GetBlackboardComponent()->SetValueAsBool("bAlive", true);
 	RPGAIController->RunBehaviorTree(BehaviorTree);
 }

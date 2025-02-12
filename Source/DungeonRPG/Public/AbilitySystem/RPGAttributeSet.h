@@ -98,6 +98,13 @@ public:
 	FGameplayAttributeData IncomingMagicDamage;
 	ATTRIBUTE_ACCESSORS(URPGAttributeSet, IncomingMagicDamage);
 
+	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
+	FGameplayAttributeData IncomingHeal;
+	ATTRIBUTE_ACCESSORS(URPGAttributeSet, IncomingHeal);
+	UPROPERTY(BlueprintReadOnly, Category = "Meta Attributes")
+	FGameplayAttributeData IncomingMana;
+	ATTRIBUTE_ACCESSORS(URPGAttributeSet, IncomingMana);
+
 	UFUNCTION()
 	void OnRep_Strength(const FGameplayAttributeData& OldStrength) const;
 	UFUNCTION()

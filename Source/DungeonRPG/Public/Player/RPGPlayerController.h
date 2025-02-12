@@ -7,6 +7,7 @@
 #include "Interaction/EnemyInterface.h"
 #include "RPGPlayerController.generated.h"
 
+class URestoreTextComponent;
 class UDamageTextComponent;
 class URPGInputConfig;
 class URPGAbilitySystemComponent;
@@ -28,6 +29,10 @@ public:
 
 	UFUNCTION(Client, Reliable)
 	void ShowDamageValue(float Damage, ACharacter* TargetCharacter, bool bCriticalHit);
+
+	UFUNCTION(Client, Reliable)
+	void ShowRestoreValue(float Restore, ACharacter* TargetCharacter, bool bCriticalHit, bool bHeal);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
@@ -54,4 +59,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<URestoreTextComponent> RestoreTextComponentClass;
 };

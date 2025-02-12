@@ -11,6 +11,7 @@
 #include "Components/AudioComponent.h"
 #include "DungeonRPG/DungeonRPG.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/RPGPlayerState.h"
 
 ARPGProjectile::ARPGProjectile()
 {
@@ -45,18 +46,25 @@ void ARPGProjectile::BeginPlay()
 void ARPGProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
-	if (LoopingSoundComponent) LoopingSoundComponent->Stop();
-
-	if (HasAuthority() && DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser() != OtherActor)
+	if (const ARPGPlayerState *PS = Cast<ARPGPlayerState>(GetOwner()))
 	{
-		if (UAbilitySystemComponent *TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
+		if (PS->GetPawn() == OtherActor) return;
+	}
+	if (GetOwner() != OtherActor)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
+		if (LoopingSoundComponent) LoopingSoundComponent->Stop();
+
+		if (HasAuthority())
 		{
-			TargetASC->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data.Get());
-		}
+			if (UAbilitySystemComponent *TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
+			{
+				TargetASC->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data.Get());
+			}
 		
-		Destroy();
+			Destroy();
+		}
 	}
 }
 

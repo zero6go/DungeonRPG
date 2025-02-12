@@ -7,6 +7,7 @@
 #include "AbilitySystem/Abilities/RPGGameplayAbility.h"
 #include "Components/CapsuleComponent.h"
 #include "DungeonRPG/DungeonRPG.h"
+#include "Kismet/GameplayStatics.h"
 
 ACharacterBase::ACharacterBase()
 {
@@ -50,6 +51,7 @@ void ACharacterBase::MulticastHandleDeath_Implementation()
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Dissolve();
+	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation(), GetActorRotation());
 	bDead = true;
 }
 
