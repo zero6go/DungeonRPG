@@ -26,6 +26,7 @@ public:
 	UAttributeSet* GetAttributeSet() const {return AttributeSet;}
 
 	FORCEINLINE int32 GetPlayerLevel() const { return Level; }
+	FORCEINLINE void SetPlayerLevel(int32 NewLevel) { Level = NewLevel; }
 
 protected:
 	UPROPERTY(VisibleAnywhere)

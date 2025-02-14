@@ -50,6 +50,7 @@ void ARPGProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor
 	{
 		if (PS->GetPawn() == OtherActor) return;
 	}
+	if (GetOwner()->ActorHasTag("Enemy") && OtherActor->ActorHasTag("Enemy")) return;
 	if (GetOwner() != OtherActor)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());

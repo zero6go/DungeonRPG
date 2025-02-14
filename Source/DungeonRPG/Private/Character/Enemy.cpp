@@ -38,6 +38,7 @@ void AEnemy::Die()
 {
 	SetLifeSpan(5.f);
 	RPGAIController->GetBlackboardComponent()->SetValueAsBool("bAlive", false);
+	
 	Super::Die();
 }
 
@@ -110,6 +111,11 @@ void AEnemy::InitAbilityActorInfo()
 int32 AEnemy::GetCharacterLevel()
 {
 	return Level;
+}
+
+void AEnemy::SetCharacterLevel(int32 NewLevel)
+{
+	Level = NewLevel;
 }
 
 void AEnemy::PossessedBy(AController* NewController)

@@ -90,4 +90,5 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool IsDead() const;
+	
 };

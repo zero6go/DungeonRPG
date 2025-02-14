@@ -43,8 +43,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
 	TArray<FAbilityInfo> StartupAbilities;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	virtual int32 GetCharacterLevel();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCharacterLevel(int32 NewLevel);
+
+	UFUNCTION(BlueprintCallable)
+	void SetMaster(ACharacterBase *NewMaster);
+
+	USkeletalMeshComponent* GetWeapon() const;
+
+	void Spawn();
+	void Dissolve();
 
 protected:
 	virtual void BeginPlay() override;
@@ -76,7 +87,11 @@ protected:
 
 	void InitDefaultAttributes(TSubclassOf<UGameplayEffect> DefaultAttributes, int32 Level);
 
-	void Dissolve();
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartSpawnTimeline(UMaterialInstanceDynamic *DynamicMaterialInstance);
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartWeaponSpawnTimeline(UMaterialInstanceDynamic *DynamicMaterialInstance);
+	
 	UFUNCTION(BlueprintImplementableEvent)
 	void StartDissolveTimeline(UMaterialInstanceDynamic *DynamicMaterialInstance);
 	UFUNCTION(BlueprintImplementableEvent)
@@ -92,6 +107,11 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	USoundBase *DeathSound;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Combat")
+	int32 MinionCount = 0;
+
+	TObjectPtr<ACharacterBase> Master = nullptr;
 
 private:
 

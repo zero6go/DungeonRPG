@@ -88,7 +88,7 @@ void ARPGPlayerController::BeginPlay()
 
 	FInputModeGameAndUI InputModeData;
 	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	InputModeData.SetHideCursorDuringCapture(true);
+	InputModeData.SetHideCursorDuringCapture(false);
 	SetInputMode(InputModeData);
 
 	if(APawn* ControlledPawn = this->GetPawn<APawn>())

@@ -20,6 +20,7 @@ ACharacterBase::ACharacterBase()
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), "WeaponHandSocket");
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
 }
 
 UAbilitySystemComponent* ACharacterBase::GetAbilitySystemComponent() const
@@ -34,6 +35,8 @@ UAnimMontage* ACharacterBase::GetHitReactMontage_Implementation()
 
 void ACharacterBase::Die()
 {
+	if (Master) Master->MinionCount--;
+	
 	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));
 	MulticastHandleDeath();
 }
@@ -60,10 +63,41 @@ int32 ACharacterBase::GetCharacterLevel()
 	return 0;
 }
 
+void ACharacterBase::SetCharacterLevel(int32 NewLevel)
+{
+}
+
+void ACharacterBase::SetMaster(ACharacterBase* NewMaster)
+{
+	Master = NewMaster;
+}
+
+USkeletalMeshComponent* ACharacterBase::GetWeapon() const
+{
+	return Weapon;
+}
+
+void ACharacterBase::Spawn()
+{
+	if (IsValid(DissolveMaterialInstance))
+	{
+		UMaterialInstanceDynamic *DynamicInstance = UMaterialInstanceDynamic::Create(DissolveMaterialInstance, this);
+		GetMesh()->SetMaterial(0, DynamicInstance);
+		StartSpawnTimeline(DynamicInstance);
+	}
+	if (IsValid(DissolveMaterialInstance))
+	{
+		UMaterialInstanceDynamic *DynamicInstance = UMaterialInstanceDynamic::Create(WeaponDissolveMaterialInstance, this);
+		Weapon->SetMaterial(0, DynamicInstance);
+		StartWeaponSpawnTimeline(DynamicInstance);
+	}
+}
+
 void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	Spawn();
 }
 
 FVector ACharacterBase::GetCombatSocketLocation_Implementation(const FName &AttackSocketName)

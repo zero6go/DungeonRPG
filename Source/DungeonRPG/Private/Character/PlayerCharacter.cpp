@@ -76,6 +76,13 @@ int32 APlayerCharacter::GetCharacterLevel()
 	return RPGPlayerState->GetPlayerLevel();
 }
 
+void APlayerCharacter::SetCharacterLevel(int32 NewLevel)
+{
+	ARPGPlayerState *RPGPlayerState = GetPlayerState<ARPGPlayerState>();
+	check(RPGPlayerState);
+	RPGPlayerState->SetPlayerLevel(NewLevel);
+}
+
 UAttributeSet* APlayerCharacter::GetAttributeSet() const
 {
 	const ARPGPlayerState *RPGPlayerState = GetPlayerState<ARPGPlayerState>();

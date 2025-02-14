@@ -23,6 +23,7 @@ public:
 	AEnemy();
 	
 	virtual int32 GetCharacterLevel() override;
+	virtual void SetCharacterLevel(int32 NewLevel) override;
 
 	virtual void PossessedBy(AController* NewController) override;
 
