@@ -60,7 +60,7 @@ struct FRangedAttackInfo
 };
 
 USTRUCT(BlueprintType)
-struct FAbilityInfo
+struct FAbilityClassAndLevel
 {
 	GENERATED_BODY()
 

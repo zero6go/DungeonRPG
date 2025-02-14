@@ -19,6 +19,9 @@ public:
 	void PossessedBy(AController* NewController) override;
 	void OnRep_PlayerState() override;
 
+	UFUNCTION(Server, Reliable)
+	void GivePlayerStartupAbilities();
+
 	virtual int32 GetCharacterLevel() override;
 	virtual void SetCharacterLevel(int32 NewLevel) override;
 

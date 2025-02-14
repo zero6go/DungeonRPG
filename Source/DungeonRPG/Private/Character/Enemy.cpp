@@ -50,15 +50,11 @@ void AEnemy::BeginPlay()
 	
 	if (HasAuthority())
 	{
+		URPGAbilitySystemComponent *ASC = Cast<URPGAbilitySystemComponent>(AbilitySystemComponent);
 		for(auto Ability : StartupAbilities)
 		{
 			Ability.Level = GetCharacterLevel() / 20.f + 1;
-			FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(Ability.AbilityClass, Ability.Level);
-			if (URPGGameplayAbility *RPGAbility = Cast<URPGGameplayAbility>(AbilitySpec.Ability))
-			{
-				AbilitySpec.DynamicAbilityTags.AddTag(RPGAbility->InputTag);
-				GetAbilitySystemComponent()->GiveAbility(AbilitySpec);
-			}
+			ASC->GiveCharacterAbility(Ability);
 		}
 	}
 

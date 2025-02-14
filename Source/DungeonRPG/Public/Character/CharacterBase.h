@@ -41,7 +41,7 @@ public:
 	TArray<FRangedAttackInfo> RangedAttackInfos;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
-	TArray<FAbilityInfo> StartupAbilities;
+	TArray<FAbilityClassAndLevel> StartupAbilities;
 
 	UFUNCTION(BlueprintPure)
 	virtual int32 GetCharacterLevel();

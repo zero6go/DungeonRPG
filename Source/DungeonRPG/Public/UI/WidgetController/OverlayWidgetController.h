@@ -6,7 +6,9 @@
 #include "UI/WidgetController/RPGWidgetController.h"
 #include "OverlayWidgetController.generated.h"
 
+struct FGameplayTag;
 struct FOnAttributeChangeData;
+class UAbilityInfo;
 
 /**
  * 
@@ -37,4 +39,7 @@ protected:
 	void MaxHealthChanged(const FOnAttributeChangeData& Data) const;
 	void ManaChanged(const FOnAttributeChangeData& Data) const;
 	void MaxManaChanged(const FOnAttributeChangeData& Data) const;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UAbilityInfo> AbilityInfo;
 };

@@ -4,7 +4,7 @@
 #include "Character/PlayerCharacter.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystem/Abilities/RPGGameplayAbility.h"
+#include "AbilitySystem/RPGAbilitySystemComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/RPGPlayerController.h"
 #include "Player/RPGPlayerState.h"
@@ -28,15 +28,7 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	InitAbilityActorInfo();
-	for(auto Ability : StartupAbilities)
-	{
-		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(Ability.AbilityClass, Ability.Level);
-		if (URPGGameplayAbility *RPGAbility = Cast<URPGGameplayAbility>(AbilitySpec.Ability))
-		{
-			AbilitySpec.DynamicAbilityTags.AddTag(RPGAbility->InputTag);
-			GetAbilitySystemComponent()->GiveAbility(AbilitySpec);
-		}
-	}
+	if (IsLocallyControlled()) GivePlayerStartupAbilities();
 }
 
 //客户端
@@ -45,6 +37,16 @@ void APlayerCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	InitAbilityActorInfo();
+	GivePlayerStartupAbilities();
+}
+
+void APlayerCharacter::GivePlayerStartupAbilities_Implementation()
+{
+	URPGAbilitySystemComponent *ASC = Cast<URPGAbilitySystemComponent>(AbilitySystemComponent);
+	for(auto Ability : StartupAbilities)
+	{
+		ASC->GivePlayerAbility(Ability);
+	}
 }
 
 void APlayerCharacter::InitAbilityActorInfo()
