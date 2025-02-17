@@ -41,3 +41,20 @@ UAttributeMenuWidgetController* URPGAbilitySystemFunctionLibrary::GetAttributeMe
 	}
 	return nullptr;
 }
+
+USpellMenuWidgetController* URPGAbilitySystemFunctionLibrary::GetSpellMenuWidgetController(
+	const UObject* WorldContextObject)
+{
+	if (APlayerController *PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		if(ARPGHUD *HUD = Cast<ARPGHUD>(PC->GetHUD()))
+		{
+			ARPGPlayerState *PS = PC->GetPlayerState<ARPGPlayerState>();
+			UAbilitySystemComponent *ASC = PS->GetAbilitySystemComponent();
+			UAttributeSet *AS = PS->GetAttributeSet();
+			const FWidgetControllerParams Params(PC, PS, ASC, AS);
+			return HUD->GetSpellMenuWidgetController(Params);
+		}
+	}
+	return nullptr;
+}

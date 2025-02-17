@@ -9,6 +9,7 @@
 #include "GameplayTagContainer.h"
 #include "Input/RPGInputComponent.h"
 #include "GameFramework/Character.h"
+#include "Player/RPGPlayerState.h"
 #include "UI/Widget/DamageTextComponent.h"
 #include "UI/Widget/RestoreTextComponent.h"
 
@@ -95,6 +96,8 @@ void ARPGPlayerController::BeginPlay()
 	{
 		ForwardVector = ControlledPawn->GetActorForwardVector();
 	}
+
+	if (HasAuthority()) GetPlayerState<ARPGPlayerState>()->Init();
 }
 
 void ARPGPlayerController::SetupInputComponent()

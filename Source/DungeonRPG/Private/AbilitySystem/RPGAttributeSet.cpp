@@ -5,6 +5,8 @@
 #include "Net/UnrealNetwork.h"
 #include "GameplayEffectExtension.h"
 #include "Character/CharacterBase.h"
+#include "Character/Enemy.h"
+#include "Character/PlayerCharacter.h"
 #include "Interaction/CombatInterface.h"
 #include "Player/RPGPlayerController.h"
 #include "GameFramework/Character.h"
@@ -27,10 +29,11 @@ void URPGAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty
 	
 	DOREPLIFETIME_CONDITION_NOTIFY(URPGAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URPGAttributeSet, AttackPower, COND_None, REPNOTIFY_Always);
-	
 	DOREPLIFETIME_CONDITION_NOTIFY(URPGAttributeSet, Armor, COND_None, REPNOTIFY_Always);
+	
 	DOREPLIFETIME_CONDITION_NOTIFY(URPGAttributeSet, CriticalRate, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URPGAttributeSet, CriticalDamage, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(URPGAttributeSet, CooldownReduction, COND_None, REPNOTIFY_Always);
 	
 	DOREPLIFETIME_CONDITION_NOTIFY(URPGAttributeSet, MaxMana, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(URPGAttributeSet, MagicPower, COND_None, REPNOTIFY_Always);
@@ -119,6 +122,14 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 					if (CombatInterface)
 					{
 						CombatInterface->Die();
+						if (Source->ActorHasTag("Player") && Target->ActorHasTag("Enemy"))
+						{
+							APlayerCharacter *Player = Cast<APlayerCharacter>(Source);
+							AEnemy *Enemy = Cast<AEnemy>(Target);
+							float XPRewardRate = Enemy->XPRewardRate;
+							float EnemyLV = Enemy->GetCharacterLevel();
+							Cast<ARPGPlayerState>(Player->GetPlayerState())->AddXP(XPRewardRate, EnemyLV);
+						}
 					}
 				}
 				else
@@ -203,6 +214,14 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 					if (CombatInterface)
 					{
 						CombatInterface->Die();
+						if (Source->ActorHasTag("Player") && Target->ActorHasTag("Enemy"))
+						{
+							APlayerCharacter *Player = Cast<APlayerCharacter>(Source);
+							AEnemy *Enemy = Cast<AEnemy>(Target);
+							float XPRewardRate = Enemy->XPRewardRate;
+							float EnemyLV = Enemy->GetCharacterLevel();
+							Cast<ARPGPlayerState>(Player->GetPlayerState())->AddXP(XPRewardRate, EnemyLV);
+						}
 					}
 				}
 				else
@@ -346,7 +365,12 @@ void URPGAttributeSet::OnRep_CriticalRate(const FGameplayAttributeData& OldCriti
 
 void URPGAttributeSet::OnRep_CriticalDamage(const FGameplayAttributeData& OldCriticalDamage) const
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(URPGAttributeSet, CriticalDamage, CriticalDamage);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URPGAttributeSet, CriticalDamage, OldCriticalDamage);
+}
+
+void URPGAttributeSet::OnRep_CooldownReduction(const FGameplayAttributeData& OldCooldownReduction) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(URPGAttributeSet, CooldownReduction, OldCooldownReduction);
 }
 
 void URPGAttributeSet::OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana) const

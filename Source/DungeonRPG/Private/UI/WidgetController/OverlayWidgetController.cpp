@@ -2,22 +2,25 @@
 
 
 #include "UI/WidgetController/OverlayWidgetController.h"
-
-#include "AbilitySystem/RPGAbilitySystemComponent.h"
 #include "AbilitySystem/RPGAttributeSet.h"
+#include "Player/RPGPlayerState.h"
 
 void UOverlayWidgetController::BroadcastInitialValues()
 {
 	const URPGAttributeSet *RPGAttributeSet = CastChecked<URPGAttributeSet>(AttributeSet);
+	const ARPGPlayerState *RPGPlayerState = CastChecked<ARPGPlayerState>(PlayerState);
 	OnHealthChanged.Broadcast(RPGAttributeSet->GetHealth());
 	OnMaxHealthChanged.Broadcast(RPGAttributeSet->GetMaxHealth());
 	OnManaChanged.Broadcast(RPGAttributeSet->GetMana());
 	OnMaxManaChanged.Broadcast(RPGAttributeSet->GetMaxMana());
+	OnXPChanged.Broadcast(RPGPlayerState->GetPlayerXP());
+	OnLevelChanged.Broadcast(RPGPlayerState->GetPlayerLevel());
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
 {
 	URPGAttributeSet *RPGAttributeSet = CastChecked<URPGAttributeSet>(AttributeSet);
+	ARPGPlayerState *RPGPlayerState = CastChecked<ARPGPlayerState>(PlayerState);
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(RPGAttributeSet->GetHealthAttribute()).AddUObject
 	(this, &UOverlayWidgetController::HealthChanged);
@@ -27,6 +30,8 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	(this, &UOverlayWidgetController::ManaChanged);
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(RPGAttributeSet->GetMaxManaAttribute()).AddUObject
 	(this, &UOverlayWidgetController::MaxManaChanged);
+	RPGPlayerState->OnXPChanged.AddUObject(this, &UOverlayWidgetController::XPChanged);
+	RPGPlayerState->OnLevelChanged.AddUObject(this, &UOverlayWidgetController::LevelChanged);
 }
 
 void UOverlayWidgetController::HealthChanged(const FOnAttributeChangeData& Data) const
@@ -47,4 +52,14 @@ void UOverlayWidgetController::ManaChanged(const FOnAttributeChangeData& Data) c
 void UOverlayWidgetController::MaxManaChanged(const FOnAttributeChangeData& Data) const
 {
 	OnMaxManaChanged.Broadcast(Data.NewValue);
+}
+
+void UOverlayWidgetController::XPChanged(const int32 NewXP) const
+{
+	OnXPChanged.Broadcast(NewXP);
+}
+
+void UOverlayWidgetController::LevelChanged(const int32 NewLevel) const
+{
+	OnLevelChanged.Broadcast(NewLevel);
 }

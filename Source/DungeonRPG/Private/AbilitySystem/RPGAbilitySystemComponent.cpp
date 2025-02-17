@@ -58,7 +58,7 @@ void URPGAbilitySystemComponent::AbilityInputReleased(const FGameplayTag& InputT
 }
 
 void URPGAbilitySystemComponent::NetMulticast_AbilityGiven_Implementation(const FGameplayTag& AbilityTag,
-	const FGameplayTag& InputTag)
+                                                                          const FGameplayTag& InputTag)
 {
 	if (!bStartupAbilitiesGiven)
 	{

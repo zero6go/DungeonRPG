@@ -27,10 +27,10 @@ public:
 	virtual void PossessedBy(AController* NewController) override;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnHealthChangedSignature OnHealthChanged;
+	FOnAttributeChangedSignature OnHealthChanged;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnMaxHealthChangedSignature OnMaxHealthChanged;
+	FOnAttributeChangedSignature OnMaxHealthChanged;
 
 	void HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
 
@@ -40,6 +40,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float WalkSpeedBase = 250.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float XPRewardRate = 1.f;
+
 	virtual void Die() override;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Combat")
@@ -48,6 +51,7 @@ public:
 protected:
 	virtual void BeginPlay() override;;
 	virtual void InitAbilityActorInfo() override;
+	virtual void ApplyAttributes(TSubclassOf<UGameplayEffect> DefaultAttributes, int32 AttributeLevel) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 Level = 1;

@@ -4,6 +4,7 @@
 #include "Character/CharacterBase.h"
 
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/RPGAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/RPGGameplayAbility.h"
 #include "Components/CapsuleComponent.h"
 #include "DungeonRPG/DungeonRPG.h"
@@ -43,6 +44,7 @@ void ACharacterBase::Die()
 
 void ACharacterBase::MulticastHandleDeath_Implementation()
 {
+	GetMesh()->GetAnimInstance()->StopAllMontages(0.2f);
 	Weapon->SetSimulatePhysics(true);
 	Weapon->SetEnableGravity(true);
 	Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
@@ -51,7 +53,7 @@ void ACharacterBase::MulticastHandleDeath_Implementation()
 	GetMesh()->SetEnableGravity(true);
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-
+	
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Dissolve();
 	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation(), GetActorRotation());
@@ -115,13 +117,9 @@ void ACharacterBase::InitAbilityActorInfo()
 {
 }
 
-void ACharacterBase::InitDefaultAttributes(TSubclassOf<UGameplayEffect> DefaultAttributes, int32 Level)
+void ACharacterBase::ApplyAttributes(TSubclassOf<UGameplayEffect> DefaultAttributes, int32 AttributeLevel)
 {
-	checkf(DefaultAttributes, TEXT("未设置默认属性值，请检查蓝图"));
-	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
-	ContextHandle.AddSourceObject(this);
-	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(DefaultAttributes, Level, ContextHandle);
-	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	
 }
 
 void ACharacterBase::Dissolve()

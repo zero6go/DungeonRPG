@@ -6,6 +6,7 @@
 #include "CharacterBase.h"
 #include "PlayerCharacter.generated.h"
 
+class UNiagaraComponent;
 /**
  * 
  */
@@ -29,8 +30,22 @@ public:
 
 	virtual void Die() override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComponent;
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticastLevelUp();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Attributes")
+	TSubclassOf<UGameplayEffect> StrengthPointEffect;
+	UPROPERTY(EditDefaultsOnly, Category = "Attributes")
+	TSubclassOf<UGameplayEffect> AgilityPointEffect;
+	UPROPERTY(EditDefaultsOnly, Category = "Attributes")
+	TSubclassOf<UGameplayEffect> IntelligencePointEffect;
+
+	UFUNCTION(Server, Reliable)
+	void UpgradeAttribute(const FName &AttributeTag, const int32 Point);
 protected:
 	virtual void InitAbilityActorInfo() override;
-	
-	
+	virtual void ApplyAttributes(TSubclassOf<UGameplayEffect> DefaultAttributes, int32 AttributeLevel) override;
+	void ApplyPlayerAttributes();
 };

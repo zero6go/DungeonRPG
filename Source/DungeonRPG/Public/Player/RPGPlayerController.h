@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Interaction/EnemyInterface.h"
 #include "RPGPlayerController.generated.h"
 
 class URestoreTextComponent;

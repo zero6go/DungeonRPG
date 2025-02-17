@@ -65,16 +65,19 @@ public:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_AttackPower, Category="Secondary Attributes")
 	FGameplayAttributeData AttackPower;
 	ATTRIBUTE_ACCESSORS(URPGAttributeSet, AttackPower);
-
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Armor, Category="Secondary Attributes")
 	FGameplayAttributeData Armor;
 	ATTRIBUTE_ACCESSORS(URPGAttributeSet, Armor);
+	
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_CriticalRate, Category="Secondary Attributes")
 	FGameplayAttributeData CriticalRate;
 	ATTRIBUTE_ACCESSORS(URPGAttributeSet, CriticalRate);
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_CriticalDamage, Category="Secondary Attributes")
 	FGameplayAttributeData CriticalDamage;
 	ATTRIBUTE_ACCESSORS(URPGAttributeSet, CriticalDamage);
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_CooldownReduction, Category="Secondary Attributes")
+	FGameplayAttributeData CooldownReduction;
+	ATTRIBUTE_ACCESSORS(URPGAttributeSet, CooldownReduction);
 	
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxMana, Category="Secondary Attributes")
 	FGameplayAttributeData MaxMana;
@@ -121,13 +124,15 @@ public:
 	void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth) const;
 	UFUNCTION()
 	void OnRep_AttackPower(const FGameplayAttributeData& OldAttackPower) const;
-
 	UFUNCTION()
 	void OnRep_Armor(const FGameplayAttributeData& OldArmor) const;
+	
 	UFUNCTION()
 	void OnRep_CriticalRate(const FGameplayAttributeData& OldCriticalRate) const;
 	UFUNCTION()
 	void OnRep_CriticalDamage(const FGameplayAttributeData& OldCriticalDamage) const;
+	UFUNCTION()
+	void OnRep_CooldownReduction(const FGameplayAttributeData& OldCooldownReduction) const;
 	
 	UFUNCTION()
 	void OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana) const;

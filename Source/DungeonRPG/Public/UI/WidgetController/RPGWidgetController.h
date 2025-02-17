@@ -31,19 +31,7 @@ struct FWidgetControllerParams
 	TObjectPtr<UAttributeSet> AttributeSet = nullptr;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChangedSignature, float, NewHealth);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMaxHealthChangedSignature, float, NewMaxHealth);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnManaChangedSignature, float, NewMana);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMaxManaChangedSignature, float, NewMaxMana);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttackPowerChangedSignature, float, NewAttackPower);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnArmorChangedSignature, float, NewArmor);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCriticalRateChangedSignature, float, NewCriticalRate);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCriticalDamageChangedSignature, float, NewCriticalDamage);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMagicPowerChangedSignature, float, NeMagicPower);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMagicResistanceChangedSignature, float, NewMagicResistance);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStrengthChangedSignature, float, NewStrength);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAgilityChangedSignature, float, NewAgility);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIntelligenceChangedSignature, float, NewIntelligence);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
 
 /**
  * 

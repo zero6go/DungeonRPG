@@ -31,5 +31,5 @@ float UMMC_MaxHealth::CalculateBaseMagnitude_Implementation(const FGameplayEffec
 	ACharacterBase *Character = Cast<ACharacterBase>(Spec.GetContext().GetSourceObject());
 	const int32 Level = Character->GetCharacterLevel();
 
-	return 40.f + 5.f * Strength + 10.f * Level;
+	return 40.f + 5.f * Strength + 5.f * Level;
 }

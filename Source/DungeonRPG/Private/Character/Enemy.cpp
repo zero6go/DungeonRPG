@@ -53,7 +53,7 @@ void AEnemy::BeginPlay()
 		URPGAbilitySystemComponent *ASC = Cast<URPGAbilitySystemComponent>(AbilitySystemComponent);
 		for(auto Ability : StartupAbilities)
 		{
-			Ability.Level = GetCharacterLevel() / 20.f + 1;
+			Ability.Level = GetCharacterLevel() / 10.f + 1;
 			ASC->GiveCharacterAbility(Ability);
 		}
 	}
@@ -98,10 +98,19 @@ void AEnemy::InitAbilityActorInfo()
 
 	if (HasAuthority())
 	{
-		InitDefaultAttributes(DefaultPrimaryAttributes, Level);
-		InitDefaultAttributes(DefaultSecondaryAttributes, Level);
-		InitDefaultAttributes(DefaultVitalAttributes, Level);
+		ApplyAttributes(DefaultPrimaryAttributes, Level);
+		ApplyAttributes(DefaultSecondaryAttributes, Level);
+		ApplyAttributes(DefaultVitalAttributes, Level);
 	}
+}
+
+void AEnemy::ApplyAttributes(TSubclassOf<UGameplayEffect> DefaultAttributes, int32 AttributeLevel)
+{
+	checkf(DefaultAttributes, TEXT("未设置默认属性值，请检查蓝图"));
+	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	ContextHandle.AddSourceObject(this);
+	FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(DefaultAttributes, AttributeLevel, ContextHandle);
+	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 }
 
 int32 AEnemy::GetCharacterLevel()

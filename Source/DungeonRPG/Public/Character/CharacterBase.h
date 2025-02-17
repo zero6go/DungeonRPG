@@ -85,7 +85,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Attributes")
 	TSubclassOf<UGameplayEffect> DefaultVitalAttributes;
 
-	void InitDefaultAttributes(TSubclassOf<UGameplayEffect> DefaultAttributes, int32 Level);
+	virtual void ApplyAttributes(TSubclassOf<UGameplayEffect> DefaultAttributes, int32 AttributeLevel);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void StartSpawnTimeline(UMaterialInstanceDynamic *DynamicMaterialInstance);
