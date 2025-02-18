@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "RPGAbilitySystemFunctionLibrary.generated.h"
 
+class UAbilityInfo;
 class USpellMenuWidgetController;
 class UAttributeMenuWidgetController;
 class UOverlayWidgetController;
@@ -26,4 +27,7 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	static USpellMenuWidgetController* GetSpellMenuWidgetController(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintPure)
+	static UAbilityInfo* GetAbilityInfo(const UObject* WorldContextObject);
 };

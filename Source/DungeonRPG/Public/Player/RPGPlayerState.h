@@ -47,6 +47,7 @@ public:
 	FOnPlayerStateChanged OnSpellPointChanged;
 	FORCEINLINE int32 GetSpellPoint() const { return SpellPoint; }
 	void AddSpellPoint(int32 InSpellPoint);
+	void SpellLevelUp(const FGameplayTag &AbilityTag);
 
 	FORCEINLINE int32 GetStrengthPoint() const { return StrengthPoint; }
 	FORCEINLINE int32 GetAgilityPoint() const { return AgilityPoint; }

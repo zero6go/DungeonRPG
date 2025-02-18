@@ -2,6 +2,8 @@
 
 
 #include "UI/WidgetController/OverlayWidgetController.h"
+
+#include "AbilitySystem/RPGAbilitySystemComponent.h"
 #include "AbilitySystem/RPGAttributeSet.h"
 #include "Player/RPGPlayerState.h"
 
@@ -21,6 +23,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 {
 	URPGAttributeSet *RPGAttributeSet = CastChecked<URPGAttributeSet>(AttributeSet);
 	ARPGPlayerState *RPGPlayerState = CastChecked<ARPGPlayerState>(PlayerState);
+	URPGAbilitySystemComponent *RPGASC = CastChecked<URPGAbilitySystemComponent>(AbilitySystemComponent);
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(RPGAttributeSet->GetHealthAttribute()).AddUObject
 	(this, &UOverlayWidgetController::HealthChanged);
@@ -32,6 +35,18 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 	(this, &UOverlayWidgetController::MaxManaChanged);
 	RPGPlayerState->OnXPChanged.AddUObject(this, &UOverlayWidgetController::XPChanged);
 	RPGPlayerState->OnLevelChanged.AddUObject(this, &UOverlayWidgetController::LevelChanged);
+	
+	if (RPGASC)
+	{
+		if (RPGASC->bStartupAbilitiesGiven)
+		{
+			BroadcastAbilityInfo();
+		}
+		else
+		{
+			RPGASC->AbilityGivenDelegate.AddUObject(this, &UOverlayWidgetController::BroadcastAbilityInfo);
+		}
+	}
 }
 
 void UOverlayWidgetController::HealthChanged(const FOnAttributeChangeData& Data) const

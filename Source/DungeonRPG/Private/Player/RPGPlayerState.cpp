@@ -52,6 +52,7 @@ void ARPGPlayerState::LevelUp(int32 OldLevel, int32 NewLevel)
 	AddSpellPoint(SpellPointGet);
 	SetPlayerLevel(NewLevel);
 	Cast<APlayerCharacter>(GetPawn())->NetMulticastLevelUp();
+	Cast<URPGAbilitySystemComponent>(AbilitySystemComponent)->UpdateAbilityStatusUnlockable(OldLevel, NewLevel);
 }
 
 void ARPGPlayerState::SetPlayerXP(int32 NewXP)
@@ -105,6 +106,14 @@ void ARPGPlayerState::AddSpellPoint(int32 InSpellPoint)
 {
 	SpellPoint += InSpellPoint;
 	OnSpellPointChanged.Broadcast(SpellPoint);
+}
+
+void ARPGPlayerState::SpellLevelUp(const FGameplayTag& AbilityTag)
+{
+	if (SpellPoint == 0) return;
+	SpellPoint--;
+	OnSpellPointChanged.Broadcast(SpellPoint);
+	Cast<URPGAbilitySystemComponent>(AbilitySystemComponent)->ServerSpellLevelUp(AbilityTag);
 }
 
 void ARPGPlayerState::AddStrengthPoint(int32 InStrengthPoint)

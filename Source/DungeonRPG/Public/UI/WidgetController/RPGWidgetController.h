@@ -6,6 +6,8 @@
 #include "UObject/NoExportTypes.h"
 #include "RPGWidgetController.generated.h"
 
+class UAbilityInfo;
+class URPGAbilitySystemComponent;
 class UAttributeSet;
 class UAbilitySystemComponent;
 
@@ -32,6 +34,7 @@ struct FWidgetControllerParams
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature, const FRPGAbilityInfo&, Info);
 
 /**
  * 
@@ -50,6 +53,11 @@ public:
 
 	virtual void BindCallbacksToDependencies();
 
+	UPROPERTY(BlueprintAssignable)
+	FAbilityInfoSignature AbilityInfoDelegate;
+
+	void BroadcastAbilityInfo();
+
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<APlayerController> PlayerController;
@@ -62,4 +70,8 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "WidgetController")
 	TObjectPtr<UAttributeSet> AttributeSet;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UAbilityInfo> AbilityInfo;
+	
 };

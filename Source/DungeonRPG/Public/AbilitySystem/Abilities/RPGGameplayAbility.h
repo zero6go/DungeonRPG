@@ -20,4 +20,6 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Used by Player")
 	FGameplayTag AbilityTag;
+
+	FGameplayTag StatusTag;
 };

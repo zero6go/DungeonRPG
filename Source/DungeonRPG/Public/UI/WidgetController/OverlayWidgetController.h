@@ -50,8 +50,5 @@ protected:
 	void LevelChanged(const int32 NewLevel) const;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UAbilityInfo> AbilityInfo;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<ULevelUpInfo> LevelUpInfo;
 };
