@@ -27,6 +27,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
 	FOnAttributeChangedSignature OnSpellPointChanged;
 
+	UFUNCTION(BlueprintCallable)
+	bool GetDescription(const FGameplayTag &AbilityTag, const int32 AbilityLevel, FString &Description, FString &NextLevelDescription);
+
 protected:
 	void SpellPointChanged(const int32 SpellPoint) const;
 	

@@ -47,6 +47,12 @@ int32 USpellMenuWidgetController::GetAbilityLevelByTag(const FGameplayTag& Abili
 	return -1;
 }
 
+bool USpellMenuWidgetController::GetDescription(const FGameplayTag& AbilityTag, const int32 AbilityLevel, FString& Description,
+	FString& NextLevelDescription)
+{
+	return Cast<URPGAbilitySystemComponent>(AbilitySystemComponent)->GetDescription(AbilityTag, AbilityLevel, Description, NextLevelDescription);
+}
+
 void USpellMenuWidgetController::SpellPointChanged(const int32 SpellPoint) const
 {
 	OnSpellPointChanged.Broadcast(SpellPoint);

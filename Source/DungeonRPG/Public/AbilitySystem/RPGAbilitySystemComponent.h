@@ -45,6 +45,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void ServerSpellLevelUp(const FGameplayTag& AbilityTag);
+
+	bool GetDescription(const FGameplayTag &AbilityTag, const int32 AbilityLevel, FString &Description, FString &NextLevelDescription);
 	
 protected:
 	virtual void OnRep_ActivateAbilities() override;

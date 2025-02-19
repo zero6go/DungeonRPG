@@ -29,5 +29,5 @@ public:
 	static USpellMenuWidgetController* GetSpellMenuWidgetController(const UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintPure)
-	static UAbilityInfo* GetAbilityInfo(const UObject* WorldContextObject);
+	static const UAbilityInfo* GetAbilityInfo(const UObject* WorldContextObject);
 };

@@ -4,6 +4,7 @@
 #include "AbilitySystem/RPGAbilitySystemFunctionLibrary.h"
 
 #include "Game/RPGGameModeBase.h"
+#include "Game/RPGGameStateBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/RPGPlayerState.h"
 #include "UI/HUD/RPGHUD.h"
@@ -60,9 +61,9 @@ USpellMenuWidgetController* URPGAbilitySystemFunctionLibrary::GetSpellMenuWidget
 	return nullptr;
 }
 
-UAbilityInfo* URPGAbilitySystemFunctionLibrary::GetAbilityInfo(const UObject* WorldContextObject)
+const UAbilityInfo* URPGAbilitySystemFunctionLibrary::GetAbilityInfo(const UObject* WorldContextObject)
 {
-	const ARPGGameModeBase *GameMode = Cast<ARPGGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
-	if (GameMode) return GameMode->AbilityInfo;
+	const ARPGGameStateBase *GameState = Cast<ARPGGameStateBase>(UGameplayStatics::GetGameState(WorldContextObject));
+	if (GameState) return GameState->AbilityInfoCopy;
 	return nullptr;
 }

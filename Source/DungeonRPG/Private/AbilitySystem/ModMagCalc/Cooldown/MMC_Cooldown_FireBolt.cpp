@@ -27,5 +27,18 @@ float UMMC_Cooldown_FireBolt::CalculateBaseMagnitude_Implementation(const FGamep
 	GetCapturedAttributeMagnitude(CooldownDef, Spec, EvaluateParameters, CooldownReduction);
 	CooldownReduction = FMath::Max(CooldownReduction, 0.f);
 
-	return 1.f * (100.f - CooldownReduction) / 100.f;
+	float CooldownBase = 2.f;
+	int32 Level = Spec.GetLevel();
+	switch (Level)
+	{
+		case 1 : CooldownBase = 2.f; break;
+		case 2 : CooldownBase = 1.8f; break;
+		case 3 : CooldownBase = 1.6f; break;
+		case 4 : CooldownBase = 1.4f; break;
+		case 5 : CooldownBase = 1.2f; break;
+		case 6 : CooldownBase = 1.f; break;
+		default : break;
+	}
+
+	return CooldownBase * (100.f - CooldownReduction) / 100.f;
 }

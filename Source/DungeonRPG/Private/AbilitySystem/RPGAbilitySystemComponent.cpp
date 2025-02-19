@@ -132,7 +132,7 @@ FGameplayAbilitySpec* URPGAbilitySystemComponent::GetAbilitySpecFromTag(const FG
 
 void URPGAbilitySystemComponent::UpdateAbilityStatusUnlockable(int32 OldLevel, int32 NewLevel)
 {
-	UAbilityInfo *AbilityInfo = URPGAbilitySystemFunctionLibrary::GetAbilityInfo(GetAvatarActor());
+	const UAbilityInfo *AbilityInfo = URPGAbilitySystemFunctionLibrary::GetAbilityInfo(GetAvatarActor());
 	for (auto Info : AbilityInfo->AbilityInformation)
 	{
 		if (NewLevel >= Info.LevelRequirement && OldLevel < Info.LevelRequirement)
@@ -152,7 +152,7 @@ void URPGAbilitySystemComponent::UpdateAbilityStatusUnlockable(int32 OldLevel, i
 
 void URPGAbilitySystemComponent::ServerSpellLevelUp_Implementation(const FGameplayTag& AbilityTag)
 {
-	UAbilityInfo *AbilityInfo = URPGAbilitySystemFunctionLibrary::GetAbilityInfo(GetAvatarActor());
+	const UAbilityInfo *AbilityInfo = URPGAbilitySystemFunctionLibrary::GetAbilityInfo(GetAvatarActor());
 	for (auto Info : AbilityInfo->AbilityInformation)
 	{
 		if (Info.AbilityTag.MatchesTag(AbilityTag))
@@ -167,6 +167,33 @@ void URPGAbilitySystemComponent::ServerSpellLevelUp_Implementation(const FGamepl
 			ClientUpdateAbilityStatus(*Spec);
 		}
 	}
+}
+
+bool URPGAbilitySystemComponent::GetDescription(const FGameplayTag& AbilityTag, const int32 AbilityLevel, FString& Description,
+	FString& NextLevelDescription)
+{
+	if (const FGameplayAbilitySpec *AbilitySpec = GetAbilitySpecFromTag(AbilityTag))
+	{
+		if (URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(AbilitySpec->Ability))
+		{
+			if (AbilityLevel > 0)
+			{
+				Description = Ability->GetDescription(AbilityLevel);
+				NextLevelDescription = Ability->GetDescription(AbilityLevel + 1);
+				return true;
+			}
+			else if (AbilityLevel == 0)
+			{
+				Description = FString("<Default>技能可以花费一技能点解锁</>");
+				NextLevelDescription = Ability->GetDescription(AbilityLevel + 1);
+			}
+			
+		}
+	}
+	const UAbilityInfo *AbilityInfo = URPGAbilitySystemFunctionLibrary::GetAbilityInfo(GetAvatarActor());
+	Description = URPGGameplayAbility::GetLockedDescription(AbilityInfo->FindAbilityInfoForTag(AbilityTag).LevelRequirement);
+	NextLevelDescription = FString();
+	return false;
 }
 
 void URPGAbilitySystemComponent::OnRep_ActivateAbilities()

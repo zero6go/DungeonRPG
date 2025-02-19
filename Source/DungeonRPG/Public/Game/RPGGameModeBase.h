@@ -18,4 +18,6 @@ class DUNGEONRPG_API ARPGGameModeBase : public AGameModeBase
 public:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAbilityInfo> AbilityInfo;
+
+	void BeginPlay() override;
 };

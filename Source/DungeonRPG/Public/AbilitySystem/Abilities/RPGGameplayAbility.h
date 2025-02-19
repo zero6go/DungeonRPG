@@ -22,4 +22,21 @@ public:
 	FGameplayTag AbilityTag;
 
 	FGameplayTag StatusTag;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Used by Player")
+	UCurveTable *DamageCurveTable;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Used by Player")
+	float CooldownAccordingToMMC[6];
+
+	UPROPERTY(EditDefaultsOnly, Category = "Used by Player")
+	FText AbilityName;
+	UPROPERTY(EditDefaultsOnly, Category = "Used by Player")
+	FText AbilityDescription;
+
+	virtual FString GetDescription(int32 Level);
+	static FString GetLockedDescription(int32 Level);
+
+protected:
+	float GetAbilityManaCost(int32 Level) const;
 };
