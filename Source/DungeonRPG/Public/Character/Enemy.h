@@ -38,9 +38,6 @@ public:
 	bool bHitReacting = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	float WalkSpeedBase = 250.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float XPRewardRate = 1.f;
 
 	virtual void Die() override;

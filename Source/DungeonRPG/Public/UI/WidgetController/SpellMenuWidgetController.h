@@ -22,6 +22,9 @@ public:
 	void SpellLevelUp(const FGameplayTag &AbilityTag);
 
 	UFUNCTION(BlueprintCallable)
+	void EquipSpell(const FGameplayTag &AbilityTag, const FGameplayTag& InputTag);
+
+	UFUNCTION(BlueprintCallable)
 	int32 GetAbilityLevelByTag(const FGameplayTag &AbilityTag);
 
 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")

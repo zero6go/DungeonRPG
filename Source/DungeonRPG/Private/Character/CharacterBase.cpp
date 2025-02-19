@@ -3,12 +3,11 @@
 
 #include "Character/CharacterBase.h"
 
-#include "AbilitySystemComponent.h"
-#include "AbilitySystem/RPGAbilitySystemComponent.h"
 #include "AbilitySystem/Abilities/RPGGameplayAbility.h"
 #include "Components/CapsuleComponent.h"
 #include "DungeonRPG/DungeonRPG.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ACharacterBase::ACharacterBase()
 {
@@ -99,6 +98,7 @@ void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeedBase;
 	Spawn();
 }
 

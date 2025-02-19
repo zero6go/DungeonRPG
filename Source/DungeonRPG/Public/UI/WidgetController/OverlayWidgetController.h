@@ -4,12 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "UI/WidgetController/RPGWidgetController.h"
+#include "AbilitySystem/AbilityInfo.h"
 #include "OverlayWidgetController.generated.h"
 
 class ULevelUpInfo;
 struct FGameplayTag;
 struct FOnAttributeChangeData;
 class UAbilityInfo;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSpellEquippedSignature, FRPGAbilityInfo, AbilityInfo);
 
 /**
  * 
@@ -40,6 +43,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category="GAS|Attributes")
 	FOnAttributeChangedSignature OnLevelChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnSpellEquippedSignature OnSpellEquipped;
 
 protected:
 	void HealthChanged(const FOnAttributeChangeData& Data) const;

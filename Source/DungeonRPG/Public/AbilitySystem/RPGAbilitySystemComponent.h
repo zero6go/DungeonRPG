@@ -39,7 +39,10 @@ public:
 	static FGameplayTag GetStatusTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);
 	static int32 GetAbilityLevelFromSpec(const FGameplayAbilitySpec& AbilitySpec);
 
-	FGameplayAbilitySpec* GetAbilitySpecFromTag(const FGameplayTag& AbilityTag);
+	FGameplayAbilitySpec* GetAbilitySpecFromAbilityTag(const FGameplayTag& AbilityTag);
+	FGameplayAbilitySpec* GetAbilitySpecFromInputTag(const FGameplayTag& InputTag);
+
+	void EquipSpell(const FGameplayTag& AbilityTag, const FGameplayTag& InputTag);
 
 	void UpdateAbilityStatusUnlockable(int32 OldLevel, int32 NewLevel);
 
@@ -54,5 +57,5 @@ protected:
 	UFUNCTION(Client, Reliable)
 	void ClientUpdateAbilityStatus(const FGameplayAbilitySpec& AbilitySpec);
 private:
-	
+	FGameplayTag EquippedAbilityTag;
 };

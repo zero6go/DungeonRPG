@@ -46,7 +46,6 @@ void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	InitAbilityActorInfo();
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeedBase;
 	
 	if (HasAuthority())
 	{

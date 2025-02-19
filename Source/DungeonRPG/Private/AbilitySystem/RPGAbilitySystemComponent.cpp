@@ -7,6 +7,7 @@
 #include "AbilitySystem/RPGAbilitySystemFunctionLibrary.h"
 #include "Interaction/CombatInterface.h"
 #include "AbilitySystem/Abilities/RPGGameplayAbility.h"
+#include "UI/WidgetController/OverlayWidgetController.h"
 
 void URPGAbilitySystemComponent::GivePlayerAbility(const FAbilityClassAndLevel& AbilityInfo)
 {
@@ -25,13 +26,11 @@ void URPGAbilitySystemComponent::GiveCharacterAbility(const FAbilityClassAndLeve
 
 void URPGAbilitySystemComponent::AbilityInputPressed(const FGameplayTag& InputTag)
 {
-	
-}
-
-void URPGAbilitySystemComponent::AbilityInputHeld(const FGameplayTag& InputTag)
-{
 	if (!InputTag.IsValid()) return;
 
+	if (InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.LMB"))
+		|| InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.RMB"))) return;
+	
 	for (auto AbilitySpec : GetActivatableAbilities())
 	{
 		if(AbilitySpec.Ability)
@@ -39,10 +38,45 @@ void URPGAbilitySystemComponent::AbilityInputHeld(const FGameplayTag& InputTag)
 			URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(AbilitySpec.Ability);
 			if (Ability->InputTag.MatchesTag(InputTag))
 			{
-				AbilitySpecInputPressed(AbilitySpec);
-				if(!AbilitySpec.IsActive())
+				EquippedAbilityTag = Ability->AbilityTag;
+				const UAbilityInfo *AbilityInfo = URPGAbilitySystemFunctionLibrary::GetAbilityInfo(GetAvatarActor());
+				URPGAbilitySystemFunctionLibrary::GetOverlayWidgetController(GetAvatarActor())
+				->OnSpellEquipped.Broadcast(AbilityInfo->FindAbilityInfoForTag(Ability->AbilityTag));
+			}
+		}
+	}
+}
+
+void URPGAbilitySystemComponent::AbilityInputHeld(const FGameplayTag& InputTag)
+{
+	if (!InputTag.IsValid()) return;
+
+	if (InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.LMB")))
+	{
+		FGameplayAbilitySpec *EquippedAbility = GetAbilitySpecFromAbilityTag(EquippedAbilityTag);
+		if (EquippedAbility && EquippedAbility->Ability)
+		{
+			AbilitySpecInputPressed(*EquippedAbility);
+			if(!EquippedAbility->IsActive())
+			{
+				TryActivateAbility(EquippedAbility->Handle);
+			}
+		}
+	}
+	if (InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.RMB")))
+	{
+		for (auto AbilitySpec : GetActivatableAbilities())
+		{
+			if(AbilitySpec.Ability)
+			{
+				URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(AbilitySpec.Ability);
+				if (Ability->InputTag.MatchesTag(InputTag))
 				{
-					TryActivateAbility(AbilitySpec.Handle);
+					AbilitySpecInputPressed(AbilitySpec);
+					if(!AbilitySpec.IsActive())
+					{
+						TryActivateAbility(AbilitySpec.Handle);
+					}
 				}
 			}
 		}
@@ -53,14 +87,25 @@ void URPGAbilitySystemComponent::AbilityInputReleased(const FGameplayTag& InputT
 {
 	if (!InputTag.IsValid()) return;
 
-	for (auto AbilitySpec : GetActivatableAbilities())
+	if (InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.LMB")))
 	{
-		if(AbilitySpec.Ability)
+		FGameplayAbilitySpec *EquippedAbility = GetAbilitySpecFromAbilityTag(EquippedAbilityTag);
+		if (EquippedAbility && EquippedAbility->Ability)
 		{
-			URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(AbilitySpec.Ability);
-			if (Ability->InputTag.MatchesTag(InputTag))
+			AbilitySpecInputReleased(*EquippedAbility);
+		}
+	}
+	if (InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.RMB")))
+	{
+		for (auto AbilitySpec : GetActivatableAbilities())
+		{
+			if(AbilitySpec.Ability)
 			{
-				AbilitySpecInputReleased(AbilitySpec);
+				URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(AbilitySpec.Ability);
+				if (Ability->InputTag.MatchesTag(InputTag))
+				{
+					AbilitySpecInputReleased(AbilitySpec);
+				}
 			}
 		}
 	}
@@ -113,7 +158,7 @@ int32 URPGAbilitySystemComponent::GetAbilityLevelFromSpec(const FGameplayAbility
 	return AbilitySpec.Level;
 }
 
-FGameplayAbilitySpec* URPGAbilitySystemComponent::GetAbilitySpecFromTag(const FGameplayTag& AbilityTag)
+FGameplayAbilitySpec* URPGAbilitySystemComponent::GetAbilitySpecFromAbilityTag(const FGameplayTag& AbilityTag)
 {
 	FScopedAbilityListLock ActiveScopeLock(*this);
 	for (FGameplayAbilitySpec &AbilitySpec : GetActivatableAbilities())
@@ -130,6 +175,39 @@ FGameplayAbilitySpec* URPGAbilitySystemComponent::GetAbilitySpecFromTag(const FG
 	return nullptr;
 }
 
+FGameplayAbilitySpec* URPGAbilitySystemComponent::GetAbilitySpecFromInputTag(const FGameplayTag& InputTag)
+{
+	FScopedAbilityListLock ActiveScopeLock(*this);
+	for (FGameplayAbilitySpec &AbilitySpec : GetActivatableAbilities())
+	{
+		if(AbilitySpec.Ability)
+		{
+			URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(AbilitySpec.Ability);
+			if (Ability->InputTag.MatchesTag(InputTag))
+			{
+				return &AbilitySpec;
+			}
+		}
+	}
+	return nullptr;
+}
+
+void URPGAbilitySystemComponent::EquipSpell(const FGameplayTag& AbilityTag, const FGameplayTag& InputTag)
+{
+	if (FGameplayAbilitySpec *Spec = GetAbilitySpecFromAbilityTag(AbilityTag))
+	{
+		if (FGameplayAbilitySpec *OldSpec = GetAbilitySpecFromInputTag(InputTag))
+		{
+			URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(OldSpec->Ability);
+			Ability->InputTag = FGameplayTag();
+			Ability->StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.UnLocked");
+		}
+		URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(Spec->Ability);
+		Ability->InputTag = InputTag;
+		Ability->StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.Equipped");
+	}
+}
+
 void URPGAbilitySystemComponent::UpdateAbilityStatusUnlockable(int32 OldLevel, int32 NewLevel)
 {
 	const UAbilityInfo *AbilityInfo = URPGAbilitySystemFunctionLibrary::GetAbilityInfo(GetAvatarActor());
@@ -137,7 +215,7 @@ void URPGAbilitySystemComponent::UpdateAbilityStatusUnlockable(int32 OldLevel, i
 	{
 		if (NewLevel >= Info.LevelRequirement && OldLevel < Info.LevelRequirement)
 		{
-			if (!GetAbilitySpecFromTag(Info.AbilityTag))
+			if (!GetAbilitySpecFromAbilityTag(Info.AbilityTag))
 			{
 				FGameplayAbilitySpec Spec = FGameplayAbilitySpec(Info.AbilityClass, 0);
 				Cast<URPGGameplayAbility>(Spec.Ability)->StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.Unlockable");
@@ -157,7 +235,7 @@ void URPGAbilitySystemComponent::ServerSpellLevelUp_Implementation(const FGamepl
 	{
 		if (Info.AbilityTag.MatchesTag(AbilityTag))
 		{
-			FGameplayAbilitySpec *Spec = GetAbilitySpecFromTag(Info.AbilityTag);
+			FGameplayAbilitySpec *Spec = GetAbilitySpecFromAbilityTag(Info.AbilityTag);
 			if (Spec->Level == 0)
 			{
 				Cast<URPGGameplayAbility>(Spec->Ability)->StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.Unlocked");
@@ -172,7 +250,7 @@ void URPGAbilitySystemComponent::ServerSpellLevelUp_Implementation(const FGamepl
 bool URPGAbilitySystemComponent::GetDescription(const FGameplayTag& AbilityTag, const int32 AbilityLevel, FString& Description,
 	FString& NextLevelDescription)
 {
-	if (const FGameplayAbilitySpec *AbilitySpec = GetAbilitySpecFromTag(AbilityTag))
+	if (const FGameplayAbilitySpec *AbilitySpec = GetAbilitySpecFromAbilityTag(AbilityTag))
 	{
 		if (URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(AbilitySpec->Ability))
 		{

@@ -57,6 +57,9 @@ public:
 	void Spawn();
 	void Dissolve();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float WalkSpeedBase = 250.f;
+
 protected:
 	virtual void BeginPlay() override;
 	

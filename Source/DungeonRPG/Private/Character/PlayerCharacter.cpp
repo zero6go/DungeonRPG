@@ -141,3 +141,15 @@ void APlayerCharacter::Die()
 	if (APlayerController *PC = Cast<APlayerController>(GetController())) PC->DisableInput(nullptr);
 	Super::Die();
 }
+
+void APlayerCharacter::Run()
+{
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeedBase * 2;
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APlayerCharacter::Walk, 3.f, false);
+}
+
+void APlayerCharacter::Walk()
+{
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeedBase;
+}

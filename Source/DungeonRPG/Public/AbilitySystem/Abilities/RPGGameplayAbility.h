@@ -21,7 +21,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Used by Player")
 	FGameplayTag AbilityTag;
 
-	FGameplayTag StatusTag;
+	FGameplayTag StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.Locked");
 
 	UPROPERTY(EditDefaultsOnly, Category = "Used by Player")
 	UCurveTable *DamageCurveTable;

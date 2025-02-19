@@ -35,6 +35,11 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticastLevelUp();
 
+	UFUNCTION(BlueprintCallable)
+	void Run();
+
+	void Walk();
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Attributes")
 	TSubclassOf<UGameplayEffect> StrengthPointEffect;
 	UPROPERTY(EditDefaultsOnly, Category = "Attributes")

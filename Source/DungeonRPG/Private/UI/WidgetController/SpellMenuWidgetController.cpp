@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/AbilityInfo.h"
 #include "AbilitySystem/RPGAbilitySystemComponent.h"
+#include "AbilitySystem/RPGAbilitySystemFunctionLibrary.h"
 #include "Player/RPGPlayerState.h"
 
 void USpellMenuWidgetController::BroadcastInitialValues()
@@ -40,10 +41,17 @@ void USpellMenuWidgetController::SpellLevelUp(const FGameplayTag& AbilityTag)
 	Cast<ARPGPlayerState>(PlayerState)->SpellLevelUp(AbilityTag);
 }
 
+void USpellMenuWidgetController::EquipSpell(const FGameplayTag& AbilityTag, const FGameplayTag& InputTag)
+{
+	Cast<URPGAbilitySystemComponent>(AbilitySystemComponent)->EquipSpell(AbilityTag, InputTag);
+	BroadcastAbilityInfo();
+	URPGAbilitySystemFunctionLibrary::GetOverlayWidgetController(this)->BroadcastAbilityInfo();
+}
+
 int32 USpellMenuWidgetController::GetAbilityLevelByTag(const FGameplayTag& AbilityTag)
 {
 	URPGAbilitySystemComponent *ASC = Cast<URPGAbilitySystemComponent>(AbilitySystemComponent);
-	if (FGameplayAbilitySpec *Spec = ASC->GetAbilitySpecFromTag(AbilityTag)) return Spec->Level;
+	if (FGameplayAbilitySpec *Spec = ASC->GetAbilitySpecFromAbilityTag(AbilityTag)) return Spec->Level;
 	return -1;
 }
 
