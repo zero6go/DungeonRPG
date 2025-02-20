@@ -26,6 +26,12 @@ void URPGProjectileSpell::SpawnProjectile(const FVector &TargetLocation, const F
 	UAbilitySystemComponent *SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetAvatarActorFromActorInfo());
 	FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(ProjectileInfo.DamageEffectClass, GetAbilityLevel(), SourceASC->MakeEffectContext());
 	Projectile->DamageEffectSpecHandle = SpecHandle;
+	if (DebuffEffectClass)
+	{
+		Projectile->DebuffChance = this->DebuffChance;
+		FGameplayEffectSpecHandle DebuffSpecHandle = SourceASC->MakeOutgoingSpec(DebuffEffectClass, GetAbilityLevel(), SourceASC->MakeEffectContext());
+		Projectile->DebuffEffectSpecHandle = DebuffSpecHandle;
+	}
 
 	Projectile->FinishSpawning(SpawnTransform);
 }

@@ -51,6 +51,11 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 {
 	Super::PostGameplayEffectExecute(Data);
 
+	ACharacterBase *Target;
+	if (ARPGPlayerState *PS= Cast<ARPGPlayerState>(GetOwningActor()))  Target = Cast<ACharacterBase>(PS->GetPawn());
+	else Target = Cast<ACharacterBase>(GetOwningActor());
+	if (ICombatInterface::Execute_IsDead(Target)) return;
+
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
 		SetHealth(FMath::Clamp<float>(GetHealth(), 0.0f, GetMaxHealth()));
@@ -66,10 +71,6 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 		SetIncomingAttackDamage(0.f);
 		if (LocalIncomingAttackDamage > 0)
 		{
-			ACharacterBase *Target;
-			if (ARPGPlayerState *PS= Cast<ARPGPlayerState>(GetOwningActor()))  Target = Cast<ACharacterBase>(PS->GetPawn());
-			else Target = Cast<ACharacterBase>(GetOwningActor());
-			
 			ACharacterBase *Source = Cast<ACharacterBase>(Data.EffectSpec.GetContext().GetInstigatorAbilitySystemComponent()->GetAvatarActor());
 			//自残或受到场地伤害（EffectActor的ASC是触发该Actor的玩家所拥有的ASC，详见RPGEffectActor代码）
 			if (Source == Target)
@@ -122,7 +123,7 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 					if (CombatInterface)
 					{
 						CombatInterface->Die();
-						if (Source->ActorHasTag("Player") && Target->ActorHasTag("Enemy"))
+						if (Source->ActorHasTag("Player") && Target->ActorHasTag("Enemy") && !ICombatInterface::Execute_IsDead(Source))
 						{
 							APlayerCharacter *Player = Cast<APlayerCharacter>(Source);
 							AEnemy *Enemy = Cast<AEnemy>(Target);
@@ -134,9 +135,14 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 				}
 				else
 				{
-					FGameplayTagContainer TagContainer;
-					TagContainer.AddTag(FGameplayTag::RequestGameplayTag("Effects.HitReact"));
-					GetOwningAbilitySystemComponent()->TryActivateAbilitiesByTag(TagContainer);
+					FGameplayTagContainer EffectTagContainer;
+					Data.EffectSpec.GetAllAssetTags(EffectTagContainer);
+					if (!EffectTagContainer.HasTag(FGameplayTag::RequestGameplayTag("Debuff")))
+					{
+						FGameplayTagContainer TagContainer;
+						TagContainer.AddTag(FGameplayTag::RequestGameplayTag("Effects.HitReact"));
+						GetOwningAbilitySystemComponent()->TryActivateAbilitiesByTag(TagContainer);
+					}
 				}
 				//显示伤害值
 				if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Source->Controller))
@@ -157,10 +163,6 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 		SetIncomingMagicDamage(0.f);
 		if (LocalIncomingMagicDamage > 0)
 		{
-			ACharacterBase *Target;
-			if (ARPGPlayerState *PS= Cast<ARPGPlayerState>(GetOwningActor()))  Target = Cast<ACharacterBase>(PS->GetPawn());
-			else Target = Cast<ACharacterBase>(GetOwningActor());
-			
 			ACharacterBase *Source = Cast<ACharacterBase>(Data.EffectSpec.GetContext().GetInstigatorAbilitySystemComponent()->GetAvatarActor());
 			//自残或受到场地伤害（EffectActor的ASC是触发该Actor的玩家所拥有的ASC，详见RPGEffectActor代码）
 			if (Source == Target)
@@ -214,7 +216,7 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 					if (CombatInterface)
 					{
 						CombatInterface->Die();
-						if (Source->ActorHasTag("Player") && Target->ActorHasTag("Enemy"))
+						if (Source->ActorHasTag("Player") && Target->ActorHasTag("Enemy") && !ICombatInterface::Execute_IsDead(Source))
 						{
 							APlayerCharacter *Player = Cast<APlayerCharacter>(Source);
 							AEnemy *Enemy = Cast<AEnemy>(Target);
@@ -226,9 +228,14 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 				}
 				else
 				{
-					FGameplayTagContainer TagContainer;
-					TagContainer.AddTag(FGameplayTag::RequestGameplayTag("Effects.HitReact"));
-					GetOwningAbilitySystemComponent()->TryActivateAbilitiesByTag(TagContainer);
+					FGameplayTagContainer EffectTagContainer;
+					Data.EffectSpec.GetAllAssetTags(EffectTagContainer);
+					if (!EffectTagContainer.HasTag(FGameplayTag::RequestGameplayTag("Debuff")))
+					{
+						FGameplayTagContainer TagContainer;
+						TagContainer.AddTag(FGameplayTag::RequestGameplayTag("Effects.HitReact"));
+						GetOwningAbilitySystemComponent()->TryActivateAbilitiesByTag(TagContainer);
+					}
 				}
 				//显示伤害值
 				if (ARPGPlayerController *PC = Cast<ARPGPlayerController>(Source->Controller))
@@ -250,9 +257,6 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 		SetIncomingHeal(0.f);
 		if (LocalIncomingHeal > 0)
 		{
-			ACharacterBase *Target;
-			if (ARPGPlayerState *PS= Cast<ARPGPlayerState>(GetOwningActor()))  Target = Cast<ACharacterBase>(PS->GetPawn());
-			else Target = Cast<ACharacterBase>(GetOwningActor());
 			ACharacterBase *Source = Cast<ACharacterBase>(Data.EffectSpec.GetContext().GetInstigatorAbilitySystemComponent()->GetAvatarActor());
 			URPGAttributeSet *SourceAttributeSet = Cast<URPGAttributeSet>(Source->GetAttributeSet());
 			URPGAttributeSet *TargetAttributeSet = Cast<URPGAttributeSet>(Target->GetAttributeSet());
@@ -286,9 +290,6 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 		SetIncomingMana(0.f);
 		if (LocalIncomingMana > 0)
 		{
-			ACharacterBase *Target;
-			if (ARPGPlayerState *PS= Cast<ARPGPlayerState>(GetOwningActor()))  Target = Cast<ACharacterBase>(PS->GetPawn());
-			else Target = Cast<ACharacterBase>(GetOwningActor());
 			ACharacterBase *Source = Cast<ACharacterBase>(Data.EffectSpec.GetContext().GetInstigatorAbilitySystemComponent()->GetAvatarActor());
 			URPGAttributeSet *SourceAttributeSet = Cast<URPGAttributeSet>(Source->GetAttributeSet());
 			URPGAttributeSet *TargetAttributeSet = Cast<URPGAttributeSet>(Target->GetAttributeSet());

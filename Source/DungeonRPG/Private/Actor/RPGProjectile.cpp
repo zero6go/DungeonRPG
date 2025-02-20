@@ -62,6 +62,15 @@ void ARPGProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComp, AActor
 			if (UAbilitySystemComponent *TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
 			{
 				TargetASC->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data.Get());
+				if (DamageEffectSpecHandle.Data.Get() != nullptr)
+				{
+					const float Seed = FMath::RandRange(0.f, 100.f);
+					const bool bDebuff = Seed == 100.f ? true : Seed < DebuffChance;
+					if (bDebuff)
+					{
+						TargetASC->ApplyGameplayEffectSpecToSelf(*DebuffEffectSpecHandle.Data.Get());
+					}
+				}
 			}
 		
 			Destroy();

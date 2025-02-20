@@ -34,6 +34,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Used by Player")
 	FText AbilityDescription;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Debuff")
+	float DebuffChance = 0.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Debuff")
+	TSubclassOf<UGameplayEffect> DebuffEffectClass;
+
 	virtual FString GetDescription(int32 Level);
 	static FString GetLockedDescription(int32 Level);
 

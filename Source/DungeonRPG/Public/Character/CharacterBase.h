@@ -9,6 +9,7 @@
 #include "Interaction/CombatInterface.h"
 #include "CharacterBase.generated.h"
 
+class UDebuffNiagaraComponent;
 class UNiagaraSystem;
 class UGameplayAbility;
 class UAbilitySystemComponent;
@@ -115,6 +116,9 @@ protected:
 	int32 MinionCount = 0;
 
 	TObjectPtr<ACharacterBase> Master = nullptr;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UDebuffNiagaraComponent> BurnNiagaraComponent;
 
 private:
 

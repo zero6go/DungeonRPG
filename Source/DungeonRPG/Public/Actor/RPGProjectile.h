@@ -7,6 +7,7 @@
 #include "GameplayEffectTypes.h"
 #include "RPGProjectile.generated.h"
 
+class UGameplayEffect;
 class UProjectileMovementComponent;
 class USphereComponent;
 class UNiagaraSystem;
@@ -24,6 +25,10 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
 	FGameplayEffectSpecHandle DamageEffectSpecHandle;
+	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
+	FGameplayEffectSpecHandle DebuffEffectSpecHandle;
+
+	float DebuffChance = 0.f;
 
 protected:
 	virtual void BeginPlay() override;
