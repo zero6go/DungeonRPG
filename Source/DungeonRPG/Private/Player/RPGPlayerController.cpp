@@ -7,6 +7,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameplayTagContainer.h"
+#include "Character/PlayerCharacter.h"
 #include "Input/RPGInputComponent.h"
 #include "GameFramework/Character.h"
 #include "Player/RPGPlayerState.h"
@@ -113,10 +114,13 @@ void ARPGPlayerController::Move(const FInputActionValue& InputActionValue)
 {
 	if(APawn* ControlledPawn = this->GetPawn<APawn>())
 	{
-		const FVector2d InputAxisVec = InputActionValue.Get<FVector2D>();
-		float Angle = atan2f(InputAxisVec.X, InputAxisVec.Y) / PI * 180.f;
-		FVector Direction = ForwardVector;
-		Direction = UKismetMathLibrary::RotateAngleAxis(Direction, Angle, FVector(0, 0, 1));
-		ControlledPawn->AddMovementInput(Direction);
+		if (!Cast<APlayerCharacter>(ControlledPawn)->bIsStunned)
+		{
+			const FVector2d InputAxisVec = InputActionValue.Get<FVector2D>();
+			float Angle = atan2f(InputAxisVec.X, InputAxisVec.Y) / PI * 180.f;
+			FVector Direction = ForwardVector;
+			Direction = UKismetMathLibrary::RotateAngleAxis(Direction, Angle, FVector(0, 0, 1));
+			ControlledPawn->AddMovementInput(Direction);
+		}
 	}
 }

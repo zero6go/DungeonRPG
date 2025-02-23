@@ -9,6 +9,7 @@
 #include "DungeonRPG/DungeonRPG.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 ACharacterBase::ACharacterBase()
 {
@@ -26,6 +27,13 @@ ACharacterBase::ACharacterBase()
 	Weapon->SetupAttachment(GetMesh(), "WeaponHandSocket");
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
+}
+
+void ACharacterBase::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ACharacterBase, bIsStunned);
 }
 
 UAbilitySystemComponent* ACharacterBase::GetAbilitySystemComponent() const
@@ -97,6 +105,12 @@ void ACharacterBase::Spawn()
 		Weapon->SetMaterial(0, DynamicInstance);
 		StartWeaponSpawnTimeline(DynamicInstance);
 	}
+}
+
+void ACharacterBase::StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	bIsStunned = NewCount > 0;
+	GetCharacterMovement()->MaxWalkSpeed = bIsStunned ? 0.f : WalkSpeedBase;
 }
 
 void ACharacterBase::BeginPlay()

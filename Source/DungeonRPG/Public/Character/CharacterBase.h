@@ -24,6 +24,8 @@ class DUNGEONRPG_API ACharacterBase : public ACharacter, public IAbilitySystemIn
 public:
 	ACharacterBase();
 
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UFUNCTION(BlueprintCallable)
@@ -60,6 +62,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float WalkSpeedBase = 250.f;
+
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	bool bIsStunned = false;
+
+	virtual void StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
 
 protected:
 	virtual void BeginPlay() override;

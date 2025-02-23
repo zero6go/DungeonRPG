@@ -42,6 +42,12 @@ void AEnemy::Die()
 	Super::Die();
 }
 
+void AEnemy::StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	Super::StunTagChanged(CallbackTag, NewCount);
+	if (HasAuthority()) RPGAIController->GetBlackboardComponent()->SetValueAsBool("bStunned", bIsStunned);
+}
+
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
@@ -77,6 +83,8 @@ void AEnemy::BeginPlay()
 
 		AbilitySystemComponent->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag("Effects.HitReact"),
 			EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AEnemy::HitReactTagChanged);
+		AbilitySystemComponent->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag("Debuff.Stun"),
+			EGameplayTagEventType::NewOrRemoved).AddUObject(this, &AEnemy::StunTagChanged);
 		
 		OnHealthChanged.Broadcast(AS->GetHealth());
 		OnMaxHealthChanged.Broadcast(AS->GetMaxHealth());

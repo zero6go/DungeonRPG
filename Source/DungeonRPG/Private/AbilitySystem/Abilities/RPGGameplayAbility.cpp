@@ -15,7 +15,7 @@ FString URPGGameplayAbility::GetDescription(int32 Level)
 	if (DamageCurveTable) Damage = DamageCurveTable->FindCurve("Damage", "")->Eval(Level);
 	float ManaCost = -GetAbilityManaCost(Level);
 	
-	FString Description = FString::Printf(TEXT("<Title>%s</>\n\n<Default>%s</>\n"), *AbilityName.ToString(), *AbilityDescription.ToString());
+	FString Description = FString::Printf(TEXT("<Title>%s</>\n\n<Default>%s</>\n\n"), *AbilityName.ToString(), *AbilityDescription.ToString());
 	FString LevelDescription = FString::Printf(TEXT("<Default>等级： </><Level>%d</>\n"), Level);
 	FString DamageDescription = FString::Printf(TEXT("<Default>伤害： </><Damage>%.1f</>\n"), Damage);
 	FString ManaCostDescription = FString::Printf(TEXT("<Default>魔法消耗： </><ManaCost>%.1f</>\n"), ManaCost);

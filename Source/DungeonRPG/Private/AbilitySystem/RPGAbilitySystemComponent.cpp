@@ -28,20 +28,35 @@ void URPGAbilitySystemComponent::AbilityInputPressed(const FGameplayTag& InputTa
 {
 	if (!InputTag.IsValid()) return;
 
-	if (InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.LMB"))
-		|| InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.RMB"))) return;
-	
-	for (auto AbilitySpec : GetActivatableAbilities())
+	if (InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.RMB"))) return;
+	else if (InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.LMB")))
 	{
-		if(AbilitySpec.Ability)
+		FGameplayAbilitySpec *EquippedAbility = GetAbilitySpecFromAbilityTag(EquippedAbilityTag);
+		if (EquippedAbility && EquippedAbility->Ability)
 		{
-			URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(AbilitySpec.Ability);
-			if (Ability->InputTag.MatchesTag(InputTag))
+			AbilitySpecInputPressed(*EquippedAbility);
+			if(EquippedAbility->IsActive())
 			{
-				EquippedAbilityTag = Ability->AbilityTag;
-				const UAbilityInfo *AbilityInfo = URPGAbilitySystemFunctionLibrary::GetAbilityInfo(GetAvatarActor());
-				URPGAbilitySystemFunctionLibrary::GetOverlayWidgetController(GetAvatarActor())
-				->OnSpellEquipped.Broadcast(AbilityInfo->FindAbilityInfoForTag(Ability->AbilityTag));
+				InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputPressed, EquippedAbility->Handle,
+					EquippedAbility->ActivationInfo.GetActivationPredictionKey());
+			}
+		}
+	}
+	else
+	{
+		for (auto AbilitySpec : GetActivatableAbilities())
+		{
+			if(AbilitySpec.Ability)
+			{
+				URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(AbilitySpec.Ability);
+				FGameplayAbilitySpec *EquippedAbility = GetAbilitySpecFromAbilityTag(EquippedAbilityTag);
+				if (Ability->InputTag.MatchesTag(InputTag) && (!EquippedAbility || !EquippedAbility->IsActive()) && !HasMatchingGameplayTag(Ability->CooldownTag))
+				{
+					EquippedAbilityTag = Ability->AbilityTag;
+					const UAbilityInfo *AbilityInfo = URPGAbilitySystemFunctionLibrary::GetAbilityInfo(GetAvatarActor());
+					URPGAbilitySystemFunctionLibrary::GetOverlayWidgetController(GetAvatarActor())
+					->OnSpellEquipped.Broadcast(AbilityInfo->FindAbilityInfoForTag(Ability->AbilityTag));
+				}
 			}
 		}
 	}
@@ -90,9 +105,11 @@ void URPGAbilitySystemComponent::AbilityInputReleased(const FGameplayTag& InputT
 	if (InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.LMB")))
 	{
 		FGameplayAbilitySpec *EquippedAbility = GetAbilitySpecFromAbilityTag(EquippedAbilityTag);
-		if (EquippedAbility && EquippedAbility->Ability)
+		if (EquippedAbility && EquippedAbility->Ability && EquippedAbility->IsActive())
 		{
 			AbilitySpecInputReleased(*EquippedAbility);
+			InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased, EquippedAbility->Handle,
+					EquippedAbility->ActivationInfo.GetActivationPredictionKey());
 		}
 	}
 	if (InputTag.MatchesTag(FGameplayTag::RequestGameplayTag("InputTag.RMB")))
@@ -102,7 +119,7 @@ void URPGAbilitySystemComponent::AbilityInputReleased(const FGameplayTag& InputT
 			if(AbilitySpec.Ability)
 			{
 				URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(AbilitySpec.Ability);
-				if (Ability->InputTag.MatchesTag(InputTag))
+				if (Ability->InputTag.MatchesTag(InputTag) && AbilitySpec.IsActive())
 				{
 					AbilitySpecInputReleased(AbilitySpec);
 				}

@@ -6,6 +6,8 @@
 #include "AbilitySystemComponent.h"
 #include "NiagaraComponent.h"
 #include "AbilitySystem/RPGAbilitySystemComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "DungeonRPG/DungeonRPG.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/RPGPlayerController.h"
 #include "Player/RPGPlayerState.h"
@@ -25,6 +27,10 @@ APlayerCharacter::APlayerCharacter()
 	LevelUpNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("LevelUpNiagaraComponent");
 	LevelUpNiagaraComponent->SetupAttachment(RootComponent);
 	LevelUpNiagaraComponent->SetAutoActivate(false);
+
+	RunNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("RunNiagaraComponent");
+	RunNiagaraComponent->SetupAttachment(RootComponent);
+	RunNiagaraComponent->SetAutoActivate(false);
 }
 
 //服务器
@@ -84,6 +90,8 @@ void APlayerCharacter::InitAbilityActorInfo()
 	RPGPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(RPGPlayerState, this);
 	AbilitySystemComponent = RPGPlayerState->GetAbilitySystemComponent();
 	AttributeSet = RPGPlayerState->GetAttributeSet();
+	AbilitySystemComponent->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag("Debuff.Stun"),
+			EGameplayTagEventType::NewOrRemoved).AddUObject(this, &APlayerCharacter::StunTagChanged);
 
 	if(ARPGPlayerController *RPGPlayerController = Cast<ARPGPlayerController>(GetController()))
 	{
@@ -138,6 +146,7 @@ UAttributeSet* APlayerCharacter::GetAttributeSet() const
 
 void APlayerCharacter::Die()
 {
+	GetAbilitySystemComponent()->CancelAllAbilities();
 	if (APlayerController *PC = Cast<APlayerController>(GetController())) PC->DisableInput(nullptr);
 	Super::Die();
 }
@@ -145,6 +154,8 @@ void APlayerCharacter::Die()
 void APlayerCharacter::Run()
 {
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeedBase * 2;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Ignore);
+	if (IsValid(RunNiagaraComponent)) RunNiagaraComponent->Activate();
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &APlayerCharacter::Walk, 3.f, false);
 }
@@ -152,4 +163,6 @@ void APlayerCharacter::Run()
 void APlayerCharacter::Walk()
 {
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeedBase;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Overlap);
+	if (IsValid(RunNiagaraComponent)) RunNiagaraComponent->Deactivate();
 }

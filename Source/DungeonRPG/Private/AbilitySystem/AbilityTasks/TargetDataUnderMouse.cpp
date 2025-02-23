@@ -4,6 +4,7 @@
 #include "AbilitySystem/AbilityTasks/TargetDataUnderMouse.h"
 
 #include "AbilitySystemComponent.h"
+#include "DungeonRPG/DungeonRPG.h"
 
 UTargetDataUnderMouse* UTargetDataUnderMouse::GetTargetDataUnderMouse(UGameplayAbility *OwningAbility)
 {
@@ -34,7 +35,7 @@ void UTargetDataUnderMouse::SendMouseCursorData()
 {
 	APlayerController *PC = Ability->GetActorInfo().PlayerController.Get();
 	FHitResult CursorHit;
-	PC->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), false, CursorHit);
+	PC->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Target), false, CursorHit);
 
 	FGameplayAbilityTargetDataHandle DataHandle;
 	FGameplayAbilityTargetData_SingleTargetHit *Data = new FGameplayAbilityTargetData_SingleTargetHit();

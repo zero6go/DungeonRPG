@@ -32,6 +32,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UNiagaraComponent> RunNiagaraComponent;
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticastLevelUp();
 
@@ -49,6 +51,7 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void UpgradeAttribute(const FName &AttributeTag, const int32 Point);
+
 protected:
 	virtual void InitAbilityActorInfo() override;
 	virtual void ApplyAttributes(TSubclassOf<UGameplayEffect> DefaultAttributes, int32 AttributeLevel) override;

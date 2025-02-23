@@ -21,6 +21,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Used by Player")
 	FGameplayTag AbilityTag;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Used by Player")
+	FGameplayTag CooldownTag;
+
 	FGameplayTag StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.Locked");
 
 	UPROPERTY(EditDefaultsOnly, Category = "Used by Player")
