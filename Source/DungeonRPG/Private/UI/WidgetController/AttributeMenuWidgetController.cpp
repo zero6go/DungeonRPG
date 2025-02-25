@@ -66,7 +66,7 @@ void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 
 void UAttributeMenuWidgetController::UpgradeAttribute(const FName& AttributeTag)
 {
-	Cast<ARPGPlayerState>(PlayerState)->UpgradeAttribute(AttributeTag);
+	Cast<ARPGPlayerState>(PlayerState)->ServerUpgradeAttribute(AttributeTag);
 }
 
 void UAttributeMenuWidgetController::HealthChanged(const FOnAttributeChangeData& Data) const

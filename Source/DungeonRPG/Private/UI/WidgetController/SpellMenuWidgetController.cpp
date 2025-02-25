@@ -38,7 +38,7 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 
 void USpellMenuWidgetController::SpellLevelUp(const FGameplayTag& AbilityTag)
 {
-	Cast<ARPGPlayerState>(PlayerState)->SpellLevelUp(AbilityTag);
+	Cast<ARPGPlayerState>(PlayerState)->ServerSpellLevelUp(AbilityTag);
 }
 
 void USpellMenuWidgetController::EquipSpell(const FGameplayTag& AbilityTag, const FGameplayTag& InputTag)

@@ -5,6 +5,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "Character/PlayerCharacter.h"
 
 UDebuffNiagaraComponent::UDebuffNiagaraComponent()
 {
@@ -19,6 +20,13 @@ void UDebuffNiagaraComponent::BeginPlay()
 	if (ASC)
 	{
 		ASC->RegisterGameplayTagEvent(DebuffTag, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &UDebuffNiagaraComponent::DebuffTagChanged);
+	}
+	else if (APlayerCharacter *Player = Cast<APlayerCharacter>(GetOwner()))
+	{
+		Player->OnASCRegisteredDelegate.AddLambda([this](UAbilitySystemComponent *ASC)
+		{
+			ASC->RegisterGameplayTagEvent(DebuffTag, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &UDebuffNiagaraComponent::DebuffTagChanged);
+		});
 	}
 }
 

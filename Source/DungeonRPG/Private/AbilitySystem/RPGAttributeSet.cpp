@@ -11,6 +11,8 @@
 #include "Player/RPGPlayerController.h"
 #include "GameFramework/Character.h"
 #include "Player/RPGPlayerState.h"
+#include "AbilitySystem/RPGAbilitySystemComponent.h"
+#include "AbilitySystem/Abilities/Passive/RPGPassiveAbility.h"
 
 URPGAttributeSet::URPGAttributeSet()
 {
@@ -112,6 +114,46 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 				const float Seed = FMath::RandRange(0.f, 100.f);
 				const bool bCriticalHit = Seed == 100.f ? true : Seed < CritRate;
 				if (bCriticalHit) LocalIncomingAttackDamage *= CritDmg;
+
+				URPGAbilitySystemComponent *SourceASC = Cast<URPGAbilitySystemComponent>(Source->GetAbilitySystemComponent());
+				URPGAbilitySystemComponent *TargetASC = Cast<URPGAbilitySystemComponent>(Target->GetAbilitySystemComponent());
+				if (SourceASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag("Buff.LifeSiphon")))
+				{
+					FGameplayAbilitySpec *Spec = SourceASC->GetAbilitySpecFromAbilityTag(FGameplayTag::RequestGameplayTag("Ability.Passive.LifeSiphon"));
+					int32 Level = SourceASC->GetAbilityLevelFromSpec(*Spec);
+					URPGPassiveAbility *Ability = Cast<URPGPassiveAbility>(Spec->Ability);
+					float HealthSteal = 0.f;
+					if (Ability->RateCurveTable) HealthSteal += LocalIncomingAttackDamage * Ability->RateCurveTable->FindCurve("Rate", "")->Eval(Level);
+					check(Ability->EffectClass);
+					FGameplayEffectContextHandle EffectContextHandle = SourceASC->MakeEffectContext();
+					EffectContextHandle.AddSourceObject(this);
+					FGameplayEffectSpecHandle EffectSpecHandle = SourceASC->MakeOutgoingSpec(Ability->EffectClass, Level, EffectContextHandle);
+					FGameplayEffectSpec* EffectSpec = EffectSpecHandle.Data.Get();
+					EffectSpec->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Attributes.Vital.Health"), HealthSteal);
+					SourceASC->ApplyGameplayEffectSpecToSelf(*EffectSpec);
+				}
+				if (SourceASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag("Buff.ManaSiphon")))
+				{
+					FGameplayAbilitySpec *Spec = SourceASC->GetAbilitySpecFromAbilityTag(FGameplayTag::RequestGameplayTag("Ability.Passive.ManaSiphon"));
+					int32 Level = SourceASC->GetAbilityLevelFromSpec(*Spec);
+					URPGPassiveAbility *Ability = Cast<URPGPassiveAbility>(Spec->Ability);
+					float ManaSteal = 0.f;
+					if (Ability->RateCurveTable) ManaSteal += LocalIncomingAttackDamage * Ability->RateCurveTable->FindCurve("Rate", "")->Eval(Level);
+					check(Ability->EffectClass);
+					FGameplayEffectContextHandle EffectContextHandle = SourceASC->MakeEffectContext();
+					EffectContextHandle.AddSourceObject(this);
+					FGameplayEffectSpecHandle EffectSpecHandle = SourceASC->MakeOutgoingSpec(Ability->EffectClass, Level, EffectContextHandle);
+					FGameplayEffectSpec* EffectSpec = EffectSpecHandle.Data.Get();
+					EffectSpec->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Attributes.Vital.Mana"), ManaSteal);
+					SourceASC->ApplyGameplayEffectSpecToSelf(*EffectSpec);
+				}
+				if (TargetASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag("Buff.HaloOfProtection")))
+				{
+					FGameplayAbilitySpec *Spec = TargetASC->GetAbilitySpecFromAbilityTag(FGameplayTag::RequestGameplayTag("Ability.Passive.HaloOfProtection"));
+					int32 Level = TargetASC->GetAbilityLevelFromSpec(*Spec);
+					URPGPassiveAbility *Ability = Cast<URPGPassiveAbility>(Spec->Ability);
+					if (Ability->RateCurveTable) LocalIncomingAttackDamage *= (1.f - Ability->RateCurveTable->FindCurve("Rate", "")->Eval(Level));
+				}
 			
 				const float NewHealth = GetHealth() - LocalIncomingAttackDamage;
 				SetHealth(FMath::Clamp<float>(NewHealth, 0.0f, GetMaxHealth()));
@@ -137,7 +179,7 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 				{
 					FGameplayTagContainer EffectTagContainer;
 					Data.EffectSpec.GetAllAssetTags(EffectTagContainer);
-					if (!EffectTagContainer.HasTag(FGameplayTag::RequestGameplayTag("Debuff")))
+					if (!EffectTagContainer.HasTag(FGameplayTag::RequestGameplayTag("Debuff")) && !Target->bIsStunned)
 					{
 						FGameplayTagContainer TagContainer;
 						TagContainer.AddTag(FGameplayTag::RequestGameplayTag("Effects.HitReact"));
@@ -205,6 +247,46 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 				const float Seed = FMath::RandRange(0.f, 100.f);
 				const bool bCriticalHit = Seed == 100.f ? true : Seed < CritRate;
 				if (bCriticalHit) LocalIncomingMagicDamage *= CritDmg;
+				
+				URPGAbilitySystemComponent *SourceASC = Cast<URPGAbilitySystemComponent>(Source->GetAbilitySystemComponent());
+				URPGAbilitySystemComponent *TargetASC = Cast<URPGAbilitySystemComponent>(Target->GetAbilitySystemComponent());
+				if (SourceASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag("Buff.LifeSiphon")))
+				{
+					FGameplayAbilitySpec *Spec = SourceASC->GetAbilitySpecFromAbilityTag(FGameplayTag::RequestGameplayTag("Ability.Passive.LifeSiphon"));
+					int32 Level = SourceASC->GetAbilityLevelFromSpec(*Spec);
+					URPGPassiveAbility *Ability = Cast<URPGPassiveAbility>(Spec->Ability);
+					float HealthSteal = 0.f;
+					if (Ability->RateCurveTable) HealthSteal += LocalIncomingMagicDamage * Ability->RateCurveTable->FindCurve("Rate", "")->Eval(Level);
+					check(Ability->EffectClass);
+					FGameplayEffectContextHandle EffectContextHandle = SourceASC->MakeEffectContext();
+					EffectContextHandle.AddSourceObject(this);
+					FGameplayEffectSpecHandle EffectSpecHandle = SourceASC->MakeOutgoingSpec(Ability->EffectClass, Level, EffectContextHandle);
+					FGameplayEffectSpec* EffectSpec = EffectSpecHandle.Data.Get();
+					EffectSpec->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Attributes.Vital.Health"), HealthSteal);
+					SourceASC->ApplyGameplayEffectSpecToSelf(*EffectSpec);
+				}
+				if (SourceASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag("Buff.ManaSiphon")))
+				{
+					FGameplayAbilitySpec *Spec = SourceASC->GetAbilitySpecFromAbilityTag(FGameplayTag::RequestGameplayTag("Ability.Passive.ManaSiphon"));
+					int32 Level = SourceASC->GetAbilityLevelFromSpec(*Spec);
+					URPGPassiveAbility *Ability = Cast<URPGPassiveAbility>(Spec->Ability);
+					float ManaSteal = 0.f;
+					if (Ability->RateCurveTable) ManaSteal += LocalIncomingMagicDamage * Ability->RateCurveTable->FindCurve("Rate", "")->Eval(Level);
+					check(Ability->EffectClass);
+					FGameplayEffectContextHandle EffectContextHandle = SourceASC->MakeEffectContext();
+					EffectContextHandle.AddSourceObject(this);
+					FGameplayEffectSpecHandle EffectSpecHandle = SourceASC->MakeOutgoingSpec(Ability->EffectClass, Level, EffectContextHandle);
+					FGameplayEffectSpec* EffectSpec = EffectSpecHandle.Data.Get();
+					EffectSpec->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag("Attributes.Vital.Mana"), ManaSteal);
+					SourceASC->ApplyGameplayEffectSpecToSelf(*EffectSpec);
+				}
+				if (TargetASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag("Buff.HaloOfProtection")))
+				{
+					FGameplayAbilitySpec *Spec = TargetASC->GetAbilitySpecFromAbilityTag(FGameplayTag::RequestGameplayTag("Ability.Passive.HaloOfProtection"));
+					int32 Level = TargetASC->GetAbilityLevelFromSpec(*Spec);
+					URPGPassiveAbility *Ability = Cast<URPGPassiveAbility>(Spec->Ability);
+					if (Ability->RateCurveTable) LocalIncomingMagicDamage *= (1.f - Ability->RateCurveTable->FindCurve("Rate", "")->Eval(Level));
+				}
 			
 				const float NewHealth = GetHealth() - LocalIncomingMagicDamage;
 				SetHealth(FMath::Clamp<float>(NewHealth, 0.0f, GetMaxHealth()));
@@ -230,7 +312,7 @@ void URPGAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMod
 				{
 					FGameplayTagContainer EffectTagContainer;
 					Data.EffectSpec.GetAllAssetTags(EffectTagContainer);
-					if (!EffectTagContainer.HasTag(FGameplayTag::RequestGameplayTag("Debuff")))
+					if (!EffectTagContainer.HasTag(FGameplayTag::RequestGameplayTag("Debuff")) && !Target->bIsStunned)
 					{
 						FGameplayTagContainer TagContainer;
 						TagContainer.AddTag(FGameplayTag::RequestGameplayTag("Effects.HitReact"));

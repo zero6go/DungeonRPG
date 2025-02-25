@@ -9,6 +9,7 @@
 DECLARE_MULTICAST_DELEGATE(FAbilityGiven);
 DECLARE_DELEGATE_OneParam(FForEachAbility, const FGameplayAbilitySpec&);
 DECLARE_MULTICAST_DELEGATE_OneParam(FAbilityStatusChanged, const FGameplayAbilitySpec&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FDeactivatePassiveAbility, const FGameplayTag&);
 
 struct FAbilityClassAndLevel;
 /**
@@ -22,6 +23,7 @@ class DUNGEONRPG_API URPGAbilitySystemComponent : public UAbilitySystemComponent
 public:
 	FAbilityGiven AbilityGivenDelegate;
 	FAbilityStatusChanged AbilityStatusChangedDelegate;
+	FDeactivatePassiveAbility DeactivatePassiveAbilityDelegate;
 	
 	bool bStartupAbilitiesGiven = false;
 	

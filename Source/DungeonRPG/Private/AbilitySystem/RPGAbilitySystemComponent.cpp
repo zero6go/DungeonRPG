@@ -213,15 +213,25 @@ void URPGAbilitySystemComponent::EquipSpell(const FGameplayTag& AbilityTag, cons
 {
 	if (FGameplayAbilitySpec *Spec = GetAbilitySpecFromAbilityTag(AbilityTag))
 	{
+		//卸下装备槽的原技能
 		if (FGameplayAbilitySpec *OldSpec = GetAbilitySpecFromInputTag(InputTag))
 		{
-			URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(OldSpec->Ability);
-			Ability->InputTag = FGameplayTag();
-			Ability->StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.UnLocked");
+			URPGGameplayAbility *OldAbility = Cast<URPGGameplayAbility>(OldSpec->Ability);
+			OldAbility->InputTag = FGameplayTag();
+			OldAbility->StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.UnLocked");
+			if (OldAbility->IsPassiveAbility) DeactivatePassiveAbilityDelegate.Broadcast(OldAbility->AbilityTag);
 		}
 		URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(Spec->Ability);
+		//新技能若已装备在别的槽位则卸下
+		if (Ability->StatusTag.MatchesTag(FGameplayTag::RequestGameplayTag("Ability.Status.Equipped")))
+		{
+			Ability->InputTag = FGameplayTag();
+			Ability->StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.UnLocked");
+			if (Ability->IsPassiveAbility) DeactivatePassiveAbilityDelegate.Broadcast(AbilityTag);
+		}
 		Ability->InputTag = InputTag;
 		Ability->StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.Equipped");
+		if (Ability->IsPassiveAbility) TryActivateAbility(Spec->Handle);
 	}
 }
 
@@ -235,7 +245,9 @@ void URPGAbilitySystemComponent::UpdateAbilityStatusUnlockable(int32 OldLevel, i
 			if (!GetAbilitySpecFromAbilityTag(Info.AbilityTag))
 			{
 				FGameplayAbilitySpec Spec = FGameplayAbilitySpec(Info.AbilityClass, 0);
-				Cast<URPGGameplayAbility>(Spec.Ability)->StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.Unlockable");
+				URPGGameplayAbility *Ability = Cast<URPGGameplayAbility>(Spec.Ability);
+				Ability->StatusTag = FGameplayTag::RequestGameplayTag("Ability.Status.Unlockable");
+				Ability->InputTag = FGameplayTag();
 				GiveAbility(Spec);
 				MarkAbilitySpecDirty(Spec);
 				ClientUpdateAbilityStatus(Spec);

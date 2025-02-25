@@ -12,6 +12,7 @@
 #include "Player/RPGPlayerController.h"
 #include "Player/RPGPlayerState.h"
 #include "UI/HUD/RPGHUD.h"
+#include "AbilitySystem/Abilities/Passive/PassiveNiagaraComponent.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -31,6 +32,18 @@ APlayerCharacter::APlayerCharacter()
 	RunNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("RunNiagaraComponent");
 	RunNiagaraComponent->SetupAttachment(RootComponent);
 	RunNiagaraComponent->SetAutoActivate(false);
+
+	HaloNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("HaloNiagaraComponent");
+	HaloNiagaraComponent->SetupAttachment(GetRootComponent());
+	HaloNiagaraComponent->BuffTag =  FGameplayTag::RequestGameplayTag("Buff.HaloOfProtection");
+
+	LifeSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("LifeSiphonNiagaraComponent");
+	LifeSiphonNiagaraComponent->SetupAttachment(GetRootComponent());
+	LifeSiphonNiagaraComponent->BuffTag =  FGameplayTag::RequestGameplayTag("Buff.LifeSiphon");
+
+	ManaSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("ManaSiphonNiagaraComponent");
+	ManaSiphonNiagaraComponent->SetupAttachment(GetRootComponent());
+	ManaSiphonNiagaraComponent->BuffTag =  FGameplayTag::RequestGameplayTag("Buff.ManaSiphon");
 }
 
 //服务器
@@ -90,6 +103,7 @@ void APlayerCharacter::InitAbilityActorInfo()
 	RPGPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(RPGPlayerState, this);
 	AbilitySystemComponent = RPGPlayerState->GetAbilitySystemComponent();
 	AttributeSet = RPGPlayerState->GetAttributeSet();
+	OnASCRegisteredDelegate.Broadcast(AbilitySystemComponent);
 	AbilitySystemComponent->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag("Debuff.Stun"),
 			EGameplayTagEventType::NewOrRemoved).AddUObject(this, &APlayerCharacter::StunTagChanged);
 

@@ -42,12 +42,14 @@ public:
 	FOnPlayerStateChanged OnAttributePointChanged;
 	FORCEINLINE int32 GetAttributePoint() const { return AttributePoint; }
 	void AddAttributePoint(int32 InAttributePoint);
-	void UpgradeAttribute(const FName &AttributeTag);
+	UFUNCTION(Server, Reliable)
+	void ServerUpgradeAttribute(const FName &AttributeTag);
 	
 	FOnPlayerStateChanged OnSpellPointChanged;
 	FORCEINLINE int32 GetSpellPoint() const { return SpellPoint; }
 	void AddSpellPoint(int32 InSpellPoint);
-	void SpellLevelUp(const FGameplayTag &AbilityTag);
+	UFUNCTION(Server, Reliable)
+	void ServerSpellLevelUp(const FGameplayTag &AbilityTag);
 
 	FORCEINLINE int32 GetStrengthPoint() const { return StrengthPoint; }
 	FORCEINLINE int32 GetAgilityPoint() const { return AgilityPoint; }

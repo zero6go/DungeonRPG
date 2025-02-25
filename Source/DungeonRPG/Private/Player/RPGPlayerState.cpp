@@ -79,7 +79,7 @@ void ARPGPlayerState::AddAttributePoint(int32 InAttributePoint)
 	OnAttributePointChanged.Broadcast(AttributePoint);
 }
 
-void ARPGPlayerState::UpgradeAttribute(const FName &AttributeTag)
+void ARPGPlayerState::ServerUpgradeAttribute_Implementation(const FName& AttributeTag)
 {
 	if (AttributePoint == 0) return;
 	AttributePoint--;
@@ -108,7 +108,7 @@ void ARPGPlayerState::AddSpellPoint(int32 InSpellPoint)
 	OnSpellPointChanged.Broadcast(SpellPoint);
 }
 
-void ARPGPlayerState::SpellLevelUp(const FGameplayTag& AbilityTag)
+void ARPGPlayerState::ServerSpellLevelUp_Implementation(const FGameplayTag& AbilityTag)
 {
 	if (SpellPoint == 0) return;
 	SpellPoint--;

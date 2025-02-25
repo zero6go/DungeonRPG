@@ -5,11 +5,13 @@
 
 #include "AbilitySystem/Abilities/RPGGameplayAbility.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
+#include "Character/PlayerCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "DungeonRPG/DungeonRPG.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "AbilitySystem/Abilities/Passive/PassiveNiagaraComponent.h"
 
 ACharacterBase::ACharacterBase()
 {
@@ -18,6 +20,9 @@ ACharacterBase::ACharacterBase()
 	BurnNiagaraComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("BurnNiagaraComponent");
 	BurnNiagaraComponent->SetupAttachment(GetRootComponent());
 	BurnNiagaraComponent->DebuffTag =  FGameplayTag::RequestGameplayTag("Debuff.Burn");
+	StunNiagaraComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("StunNiagaraComponent");
+	StunNiagaraComponent->SetupAttachment(GetRootComponent());
+	StunNiagaraComponent->DebuffTag =  FGameplayTag::RequestGameplayTag("Debuff.Stun");
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Projectile, ECR_Overlap);
@@ -67,8 +72,16 @@ void ACharacterBase::MulticastHandleDeath_Implementation()
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
 	
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	BurnNiagaraComponent->Deactivate();
+	StunNiagaraComponent->Deactivate();
 	Dissolve();
 	UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation(), GetActorRotation());
+	if (APlayerCharacter *Player = Cast<APlayerCharacter>(this))
+	{
+		Player->HaloNiagaraComponent->Deactivate();
+		Player->LifeSiphonNiagaraComponent->Deactivate();
+		Player->ManaSiphonNiagaraComponent->Deactivate();
+	}
 	bDead = true;
 }
 
